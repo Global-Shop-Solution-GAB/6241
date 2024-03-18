@@ -1,0 +1,711 @@
+﻿Program.Sub.ScreenSU.Start
+Gui.Form..Create(BaseForm)
+Gui.Form..Caption("Customer BOL Labels")
+Gui.Form..ContextMenuCreate("items")
+Gui.Form..ContextMenuAddItem("items","add",0,"Add Row")
+Gui.Form..ContextMenuAddItem("items","del",0,"Delete Row")
+Gui.Form..ContextMenuSetItemEventHandler("items","add","add_new_line")
+Gui.Form..ContextMenuSetItemEventHandler("items","del","del_line_item")
+Gui.Form..Size(12060,6240)
+Gui.Form..MinX(0)
+Gui.Form..MinY(0)
+Gui.Form..Position(0,0)
+Gui.Form..BackColor(-2147483633)
+Gui.Form..MaxButton(False)
+Gui.Form..MinButton(False)
+Gui.Form..MousePointer(0)
+Gui.Form..Sizeable(False)
+Gui.Form..Event(UnLoad,Form_UnLoad)
+Gui.Form..AlwaysOnTop(False)
+Gui.Form..FontName("Tahoma")
+Gui.Form..FontSize(8.25)
+Gui.Form..ControlBox(True)
+Gui.Form..Moveable(True)
+Gui.Form..ShowInTaskBar(True)
+Gui.Form..TitleBar(True)
+Gui.Form.txtCust.Create(TextBox,"",True,1215,300,0,2535,465,True,0,"Arial",8,-2147483643,1)
+Gui.Form.cmdBrwCust.Create(Button)
+Gui.Form.cmdBrwCust.Size(375,375)
+Gui.Form.cmdBrwCust.Position(3900,435)
+Gui.Form.cmdBrwCust.Caption("^")
+Gui.Form.cmdBrwCust.Event(Click,cmdBrwCust_Click)
+Gui.Form.cmdBrwCust.Enabled(True)
+Gui.Form.cmdBrwCust.Visible(True)
+Gui.Form.cmdBrwCust.Zorder(0)
+Gui.Form.cmdBrwCust.FontName("Tahoma")
+Gui.Form.cmdBrwCust.FontSize(8.25)
+Gui.Form.GsGCLabels.Create(GsGridControl)
+Gui.Form.GsGCLabels.Size(11925,4245)
+Gui.Form.GsGCLabels.Position(15,930)
+Gui.Form.GsGCLabels.Event(RowCellClick,GsGCLabels_RowCellClick)
+Gui.Form.GsGCLabels.Enabled(True)
+Gui.Form.GsGCLabels.Visible(True)
+Gui.Form.GsGCLabels.Zorder(0)
+Gui.Form.txtSupplier.Create(TextBox,"",True,1710,300,0,4800,465,True,0,"Arial",8,-2147483643,1)
+Gui.Form.txtSupplier.ToolTip("Typically your DUNS number, or the vendor ID given to you by your customer")
+Gui.Form.txtSupplier.MaxLength(15)
+Gui.Form.txtSupplier.Event(LostFocus,txtSupplier_LostFocus)
+Gui.Form.lbl1.Create(Label,"Customer",True,1155,255,0,2535,255,True,0,"Arial",8,-2147483633,0,0)
+Gui.Form.lbl1.FontStyle(True,False,False,False,False)
+Gui.Form.lbl1.BorderStyle(0)
+Gui.Form.lbl2.Create(Label,"Supplier Code (7 or 9 characters long)",True,3120,210,0,4800,255,True,0,"Arial",8,-2147483633,0,0)
+Gui.Form.lbl2.FontStyle(True,False,False,False,False)
+Gui.Form.lbl2.BorderStyle(0)
+Gui.Form.cmdSave.Create(Button)
+Gui.Form.cmdSave.Size(855,375)
+Gui.Form.cmdSave.Position(9090,315)
+Gui.Form.cmdSave.Caption("Save")
+Gui.Form.cmdSave.Event(Click,cmdSave_Click)
+Gui.Form.cmdSave.Enabled(True)
+Gui.Form.cmdSave.Visible(True)
+Gui.Form.cmdSave.Zorder(0)
+Gui.Form.cmdSave.FontName("Tahoma")
+Gui.Form.cmdSave.FontSize(8.25)
+Gui.Form.cmdCancel.Create(Button)
+Gui.Form.cmdCancel.Size(855,375)
+Gui.Form.cmdCancel.Position(10995,315)
+Gui.Form.cmdCancel.Caption("Cancel")
+Gui.Form.cmdCancel.Event(Click,cmdCancel_Click)
+Gui.Form.cmdCancel.Enabled(True)
+Gui.Form.cmdCancel.Visible(True)
+Gui.Form.cmdCancel.Zorder(0)
+Gui.Form.cmdCancel.FontName("Tahoma")
+Gui.Form.cmdCancel.FontSize(8.25)
+Gui.Form.frameType.Create(Frame)
+Gui.Form.frameType.Size(2175,840)
+Gui.Form.frameType.Position(150,30)
+Gui.Form.frameType.Caption("Label Type")
+Gui.Form.frameType.Enabled(True)
+Gui.Form.frameType.Visible(True)
+Gui.Form.frameType.Zorder(0)
+Gui.Form.frameType.FontName("Tahoma")
+Gui.Form.frameType.FontSize(8.25)
+Gui.Form.optShipping.Create(Option)
+Gui.Form.optShipping.Size(1575,255)
+Gui.Form.optShipping.Position(150,225)
+Gui.Form.optShipping.Parent("frameType")
+Gui.Form.optShipping.Caption("Shipping Label")
+Gui.Form.optShipping.Event(Click,optShipping_Click)
+Gui.Form.optShipping.Enabled(True)
+Gui.Form.optShipping.Visible(True)
+Gui.Form.optShipping.Zorder(0)
+Gui.Form.optShipping.FontName("Tahoma")
+Gui.Form.optShipping.FontSize(8.25)
+Gui.Form.optBOL.Create(Option)
+Gui.Form.optBOL.Size(1575,255)
+Gui.Form.optBOL.Position(150,495)
+Gui.Form.optBOL.Parent("frameType")
+Gui.Form.optBOL.Caption("BOL Labels")
+Gui.Form.optBOL.Event(Click,optBOL_Click)
+Gui.Form.optBOL.Enabled(True)
+Gui.Form.optBOL.Visible(True)
+Gui.Form.optBOL.Zorder(0)
+Gui.Form.optBOL.FontName("Tahoma")
+Gui.Form.optBOL.FontSize(8.25)
+Gui.Form.cmdDelete.Create(Button)
+Gui.Form.cmdDelete.Size(855,375)
+Gui.Form.cmdDelete.Position(10035,315)
+Gui.Form.cmdDelete.Caption("Delete")
+Gui.Form.cmdDelete.Event(Click,cmdDelete_Click)
+Gui.Form.cmdDelete.Enabled(True)
+Gui.Form.cmdDelete.Visible(True)
+Gui.Form.cmdDelete.Zorder(0)
+Gui.Form.cmdDelete.FontName("Tahoma")
+Gui.Form.cmdDelete.FontSize(8.25)
+Gui.Form.lbl3.Create(Label,"Serialization type",True,1365,210,0,210,5295,True,0,"Tahoma",9,,0,0)
+Gui.Form.lbl3.BorderStyle(0)
+Gui.Form.lbl4.Create(Label,"Blank = no serialization",True,1650,195,0,1800,5325,True,0,"Tahoma",8.25,,0,0)
+Gui.Form.lbl4.BorderStyle(0)
+Gui.Form.lbl6.Create(Label,"1 = Regular serialization",True,1740,195,0,1785,5535,True,0,"Tahoma",8.25,,0,0)
+Gui.Form.lbl6.BorderStyle(0)
+Gui.Form.lbl7.Create(Label,"2 = SSCC serialization",True,1575,195,0,1785,5775,True,0,"Tahoma",8.25,,0,0)
+Gui.Form.lbl7.BorderStyle(0)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+'Bryan Pham
+'01/12/2021
+'Modified 5788
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+
+
+f.Intrinsic.Control.CallSub(check_view)
+gui.Form.optBOL.Value(1)
+f.Intrinsic.Control.CallSub(build_grid)
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.Catching.Start
+v.Local.sError.declare(string)
+F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_5788_Label_Maint.g2u",V.Ambient.NewLine,v.Args.sub,V.Args.errorno,V.args.errordesc,V.Local.sError)
+f.Intrinsic.UI.Msgbox(v.Local.sError)
+F.Intrinsic.Control.CallSub(form_unload)
+Program.Sub.Catching.End
+
+Program.Sub.cmdSave_Click.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.sRow.Declare
+v.Local.sKey.Declare
+v.Local.sKey2.Declare
+v.Local.sSql.Declare
+v.Local.sSql2.Declare
+v.Local.iLen.Declare
+v.Local.sRet.Declare
+v.Local.sSupplier.Declare
+v.Local.iLenSup.Declare
+
+gui.Form.GsGCLabels.visible(False)
+v.Local.sSupplier.Set(v.Screen.Form!txtSupplier.text)
+f.Intrinsic.String.Len(v.Local.sSupplier,v.Local.iLenSup)
+
+f.Intrinsic.Control.If(v.Local.iLenSup,<>,7,and,v.Local.iLenSup,<>,9)
+	f.Intrinsic.UI.Msgbox("Supplier ID must be 7 or 9 characters long!","Invalid supplier ID")
+f.Intrinsic.Control.ElseIf(v.Screen.Form!txtSupplier.text,=,"")
+	f.Intrinsic.UI.Msgbox("Please enter a supplier ID!","Missing Supplier ID")
+f.Intrinsic.Control.Else
+	'remove the 3 columns we don't need
+	'Keep this column
+	'F.Data.DataTable.RemoveColumn("dtLABELS","brw_mstr")
+	f.Data.DataTable.RemoveColumn("dtLABELS","brw_cntr")
+	f.Data.DataTable.RemoveColumn("dtLABELS","brw_mix")
+
+
+	'George Sandoval 23 Feb 2022 - This part is trimming incorrectly since they updated to 2020.1. replaceing with the method placed in 5788.
+	'trim out the full row to get the key value
+'	f.Intrinsic.String.Replace(v.DataTable.dtLABELS(0).FullRow,"*!*","",v.Local.sRow)
+'	f.Intrinsic.String.Len(v.Local.sRow,v.Local.iLen)
+'	f.Intrinsic.String.Mid(v.Local.sRow,7,v.Local.iLen,v.Local.sKey)
+		f.Intrinsic.String.Replace(v.DataTable.dtLABELS(0).FullRow,"*!*","",v.Local.sRow)
+		f.Intrinsic.String.Len(v.Local.sRow,v.Local.iLen)
+		f.Intrinsic.String.Mid(v.Local.sRow,7,14,v.Local.sKey)
+		f.Intrinsic.String.Mid(v.Local.sRow,21,44,v.Local.sKey2)
+		F.Intrinsic.String.Build("        {0}",v.Local.sKey2,v.Local.sKey2)
+	
+	'create the correct query based on the option buttons
+	f.Intrinsic.Control.If(v.Screen.Form!optBOL.Value,=,True)
+		f.Intrinsic.String.Build("select * from ASSIGN_CUST_OPT where ASS_SYS = 'BOL' and ASS_SUB_SYS = 'LBL' AND LEFT(FILLER1,6) = '{0}'",V.DataTable.dtLABELS(0).CUST!FIELDVALSTRING,V.Local.sSql)
+	f.Intrinsic.Control.ElseIf(v.Screen.Form!optShipping.Value,=,True)
+		f.Intrinsic.String.Build("select * from ASSIGN_CUST_OPT where ASS_SYS = 'SHP' and ASS_SUB_SYS = 'LBL' AND LEFT(FILLER1,6) = '{0}'",V.DataTable.dtLABELS(0).CUST!FIELDVALSTRING,V.Local.sSql)
+	f.Intrinsic.Control.EndIf
+	
+	F.ODBC.Connection!COREDB.OPENCOMPANYCONNECTION
+	'add or update the record as needed
+	F.ODBC.Connection!COREDB.OpenLocalRecordsetRW("rstlbl",v.Local.sSql)
+	f.Intrinsic.Control.If(v.ODBC.coredb!rstlbl.EOF,=,True)
+		f.ODBC.coredb!rstlbl.AddNew
+		f.ODBC.coredb!rstlbl.Set!ASS_SYS(V.DataTable.dtLABELS(0).ASS_SYS!FIELDVALSTRING)
+		F.ODBC.coredb!rstlbl.Set!ASS_SUB_SYS(V.DataTable.dtLABELS(0).ASS_SUB_SYS!FIELDVALSTRING)
+	f.Intrinsic.Control.EndIf
+	F.ODBC.Coredb!rstlbl.Set!FILLER1(V.Local.sKey)
+	f.ODBC.coredb!rstlbl.Update
+	
+	F.ODBC.Coredb!rstlbl.Close
+	
+	'if we're working with BOL labels, then we need to set the master label to the customer master record
+	f.Intrinsic.Control.If(v.Screen.Form!optBOL.Value,=,True)
+		f.Intrinsic.String.Build("select CUSTOMER, REC, BOL_LBL_RPTID from V_CUST_FORM_INFO where CUSTOMER = '{0}' AND REC = '6'",V.Screen.Form!txtCust.TEXT,V.Local.sSql2)
+		
+		f.ODBC.Connection!COREDB.OpenLocalRecordsetRW("rstlbl",v.Local.sSql2)
+'		f.Intrinsic.Control.If(v.ODBC.coredb!rstlbl.EOF,=,True)
+		f.Intrinsic.Control.If(v.ODBC.coredb!rstlbl.EOF,=,False)
+			f.ODBC.coredb!rstlbl.AddNew
+'			f.ODBC.coredb!rstlbl.Set!CUSTOMER(V.DataTable.dtLABELS(0).CUST!FIELDVALSTRING)
+			f.ODBC.coredb!rstlbl.Set!CUSTOMER(V.DataTable.dtLABELS(0).CUST!FIELDVALTrim)
+			'F.ODBC.coredb!rstlbl.Set!REC("6")
+		f.Intrinsic.Control.EndIf
+		'George Sandoval 23 Feb 2022 - Update with SQL instead of recordsets. Breaks for some reason as of 2020.1
+		'F.Intrinsic.String.Build("UPDATE CUST_FORM_INFO set (BOL_LBL_RPTID,CUSTOMER,MASTER) = ('{0}',6,'{2}')",V.DataTable.dtLABELS(0).CUST!FieldValTrim,V.DataTable.dtLABELS(0).MASTER!FieldValTrim,V.Local.sSql)
+'		F.ODBC.Connection!coredb.Execute(V.Local.sSql)
+		
+		f.ODBC.coredb!rstlbl.Set!BOL_LBL_RPTID(V.DataTable.dtLABELS(0).MASTER!FIELDVALTrim)
+		F.ODBC.coredb!rstlbl.Update
+		f.ODBC.coredb!rstlbl.Close
+		
+	f.Intrinsic.Control.EndIf
+	
+	f.ODBC.Connection!COREDB.CLOSE
+	
+	F.Intrinsic.Control.CallSub(RESET)
+
+f.Intrinsic.Control.EndIf
+
+
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.cmdSave_Click.End
+
+Program.Sub.cmdCancel_Click.Start
+f.Intrinsic.Control.CallSub(form_unload)
+Program.Sub.cmdCancel_Click.End
+
+Program.Sub.Form_UnLoad.Start
+f.Intrinsic.Control.End
+Program.Sub.Form_UnLoad.End
+
+Program.Sub.add_new_line.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.sSys.Declare
+V.Local.sCust.Declare
+v.Local.sDefault.Declare
+V.Local.sSubSys.Declare(String,"LBL")
+v.Local.iRet.Declare
+v.Local.sMsg.Declare
+v.Local.iFlags.Declare
+
+f.Intrinsic.Control.If(v.Screen.Form!optBOL.Value,=,True)
+	v.Local.sSys.Set("BOL")
+	v.Local.sMsg.Set("You will need to select a customer for BOL labels")
+	v.Local.iFlags.Set(0)
+F.Intrinsic.Control.ElseIf(v.Screen.Form!optShipping.Value,=,True)
+	v.Local.sSys.Set("SHP")
+	v.Local.sMsg.Set("This will be the standard Shipping label (Rpt ID 53) for all customers")
+	v.Local.iFlags.Set(4)
+f.Intrinsic.Control.EndIf
+
+'George Sandoval 23 Feb 2022 - Change to Empty2 for 2020.1
+
+F.Intrinsic.Control.If(V.Screen.Form!txtCust.TEXT,>,"")
+'	F.Data.DataTable.AddRow("dtLABELS","ASS_SYS",V.Local.sSys,"ass_sub_sys",V.Local.sSubSys,"cust",V.Screen.Form!txtCust.TEXT,"DFLT_LBL","      ","EMPTY","          ","Master","      ","Serial_mstr"," ","Container","      ","Serial_CNTR"," ","Mixed","      ","Serial_MXD"," ","SUPPLIER_ID","               ")
+	F.Data.DataTable.AddRow("dtLABELS","ASS_SYS",V.Local.sSys,"ass_sub_sys",V.Local.sSubSys,"cust",V.Screen.Form!txtCust.TEXT,"DFLT_LBL","      ","EMPTY2","          ","Master","      ","Serial_mstr"," ","Container","      ","Serial_CNTR"," ","Mixed","      ","Serial_MXD"," ","SUPPLIER_ID","               ")
+F.Intrinsic.Control.Else
+'	F.Data.DataTable.AddRow("dtLABELS","ASS_SYS",V.Local.sSys,"ass_sub_sys",V.Local.sSubSys,"cust","      ","DFLT_LBL","      ","EMPTY","          ","Master","      ","Serial_mstr"," ","Container","      ","Serial_CNTR"," ","Mixed","      ","Serial_MXD"," ","SUPPLIER_ID","               ")
+	F.Data.DataTable.AddRow("dtLABELS","ASS_SYS",V.Local.sSys,"ass_sub_sys",V.Local.sSubSys,"cust","      ","DFLT_LBL","      ","EMPTY2","          ","Master","      ","Serial_mstr"," ","Container","      ","Serial_CNTR"," ","Mixed","      ","Serial_MXD"," ","SUPPLIER_ID","               ")
+	f.Intrinsic.UI.Msgbox(v.Local.sMsg,"Default Label?",v.Local.iFlags,v.Local.iRet)
+	f.Intrinsic.Control.If(v.Local.iRet,=,v.Ambient.MsgBoxNo,)
+		f.Intrinsic.Control.CallSub(cmdBrwCust_Click,"UPDATE","TRUE")
+	f.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.add_new_line.End
+
+Program.Sub.del_line_item.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.sSql.Declare
+v.Local.iRet.Declare
+
+F.Intrinsic.Control.CallSub(cmdDelete_click)
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.del_line_item.End
+
+Program.Sub.build_grid.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.sSql.Declare
+
+f.ODBC.Connection!coredb.opencompanyconnection
+f.Data.DataTable.CreateFromSQL("dtLABELS","coredb","select top 0 * from V_GCG_5788_LBL_MNT",True)
+f.odbc.connection!coredb.close
+
+f.Data.DataTable.AddColumn("dtLABELS","brw_mstr","string")
+f.Data.DataTable.AddColumn("dtLABELS","brw_cntr","string")
+f.Data.DataTable.AddColumn("dtLABELS","brw_mix","string")
+f.Data.DataView.Create("dtLABELS","dvLabels",22)
+
+
+'gui.Form.GsGCLabels.DataSource("dtLABELS")
+gui.Form.GsGCLabels.AddGridviewFromDataview("gvLabels","dtLABELS","dvLabels")
+
+
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","ass_sys","visible",False)
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","ass_sub_sys","visible",False)
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","cust","visible",False)
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","DFLT_LBL","visible",False)
+'George Sandoval 23 Feb 2022 Set column proprty name to EMPTY2 instead
+'gui.Form.GsGCLabels.SetColumnProperty("gvLabels","EMPTY","visible",False)
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","EMPTY2","visible",False)
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","SUPPLIER_ID","visible",False)
+
+'headerfontbold
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","Master","HeaderFontBold",True)
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","Serial_mstr","HeaderFontBold",True)
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","Container","HeaderFontBold",True)
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","Serial_CNTR","HeaderFontBold",True)
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","Mixed","HeaderFontBold",True)
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","Serial_MXD","HeaderFontBold",True)
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","brw_mstr","HeaderFontBold",True)
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","brw_cntr","HeaderFontBold",True)
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","brw_mix","HeaderFontBold",True)
+'caption
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","Master","caption","Master Lbl")
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","Serial_mstr","caption","Mstr. Sel.")
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","Container","caption","Container Lbl")
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","Serial_CNTR","caption","Cntr. Sel.")
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","Mixed","caption","Mixed Lbl")
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","Serial_MXD","caption","Mxd. Sel.")
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","brw_mstr","caption","Select BI")
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","brw_cntr","caption","Select BI")
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","brw_mix","caption","Select BI")
+'readonly
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","Master","ReadOnly",True)
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","Serial_mstr","ReadOnly",False)
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","Container","ReadOnly",False)
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","Serial_CNTR","ReadOnly",False)
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","Mixed","ReadOnly",False)
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","Serial_MXD","ReadOnly",False)
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","brw_mstr","ReadOnly",True)
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","brw_cntr","ReadOnly",True)
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","brw_mix","ReadOnly",True)
+'allowedit
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","Master","AllowEdit",False)
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","Serial_mstr","AllowEdit",True)
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","Container","AllowEdit",True)
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","Serial_CNTR","AllowEdit",True)
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","Mixed","AllowEdit",True)
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","Serial_MXD","AllowEdit",True)
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","brw_mstr","AllowEdit",False)
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","brw_cntr","AllowEdit",False)
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","brw_mix","AllowEdit",False)
+'visibleIndex
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","Master","visibleIndex",0)
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","Serial_mstr","visibleIndex",1)
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","Container","visibleIndex",3)
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","Serial_CNTR","visibleIndex",4)
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","Mixed","visibleIndex",6)
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","Serial_MXD","visibleIndex",7)
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","brw_mstr","visibleIndex",2)
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","brw_cntr","visibleIndex",5)
+gui.Form.GsGCLabels.SetColumnProperty("gvLabels","brw_mix","visibleIndex",8)
+
+gui.Form.GsGCLabels.ColumnEdit("gvLabels","brw_mstr","EditorButton","Select")
+gui.Form.GsGCLabels.ColumnEdit("gvLabels","brw_cntr","EditorButton","Select")
+gui.Form.GsGCLabels.ColumnEdit("gvLabels","brw_mix","EditorButton","Select")
+
+gui.Form.GsGCLabels.ColumnEdit("gvLabels","Serial_mstr","Dropdownlist","*!*0*!*1*!*2*!*3*!*4*!*5*!*6*!*7*!*8*!*9")
+gui.Form.GsGCLabels.ColumnEdit("gvLabels","Serial_CNTR","Dropdownlist","*!*0*!*1*!*2*!*3*!*4*!*5*!*6*!*7*!*8*!*9")
+gui.Form.GsGCLabels.ColumnEdit("gvLabels","Serial_MXD","Dropdownlist","*!*0*!*1*!*2*!*3*!*4*!*5*!*6*!*7*!*8*!*9")
+
+gui.Form.GsGCLabels.MainView("gvLabels")
+
+'gui.Form.GsGCLabels.ContextMenuAttach("items")
+
+gui.Form..Show()
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.build_grid.End
+
+Program.Sub.GsGCLabels_RowCellClick.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.sRet.Declare
+v.Local.sLabel.Declare
+'Function.Intrinsic.Debug.InvokeDebugger
+'Function.Intrinsic.Debug.Stop
+
+F.Intrinsic.Control.SelectCase(V.Args.COLUMN)
+
+	F.Intrinsic.Control.Case("brw_mstr")
+		f.Intrinsic.Control.CallSub(browse_bi)
+		F.Intrinsic.Control.If(v.Args.BI,<>,"CANCEL")
+			f.Intrinsic.String.LPad(v.Args.LABEL,"0",6,V.Local.sLabel)
+			f.Data.DataTable.SetValue("dtLABELS",v.Args.RowIndex,"DFLT_LBL",v.Args.BI,"Master",v.Local.sLabel)
+		f.Intrinsic.Control.EndIf
+	
+	f.Intrinsic.Control.Case("brw_cntr")
+		f.Intrinsic.Control.CallSub(browse_bi)
+		f.Intrinsic.Control.If(v.Args.BI,<>,"CANCEL")
+			f.Intrinsic.String.LPad(v.Args.LABEL,"0",6,V.Local.sLabel)
+			f.Data.DataTable.SetValue("dtLABELS",v.Args.RowIndex,"Container",v.Local.sLabel)
+		f.Intrinsic.Control.EndIf
+	
+	f.Intrinsic.Control.Case("brw_mix")
+		f.Intrinsic.Control.CallSub(browse_bi)
+		f.Intrinsic.Control.If(v.Args.BI,<>,"CANCEL")
+			f.Intrinsic.String.LPad(v.Args.LABEL,"0",6,V.Local.sLabel)
+			f.Data.DataTable.SetValue("dtLABELS",v.Args.RowIndex,"Mixed",v.Local.sLabel)
+		f.Intrinsic.Control.EndIf
+		
+		
+	F.Intrinsic.Control.CaseElse
+
+F.Intrinsic.Control.EndSelect
+
+'V_GCG_5788_LBL_MNT
+'"brw_mstr"
+'"brw_cntr"
+'"brw_mix"
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.GsGCLabels_RowCellClick.End
+
+Program.Sub.cmdBrwCust_Click.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.sRet.Declare
+v.Local.sSql.Declare
+v.Local.bVar.Declare
+
+f.ODBC.Connection!coredb.opencompanyconnection
+
+f.Intrinsic.UI.SetBrowserHotTypeAhead(True)
+f.Intrinsic.UI.SetBrowserHotTypeAheadColumn(1)
+
+f.Intrinsic.UI.CommonBrowser(205,,v.Local.sRet)
+
+f.Intrinsic.Variable.ArgExists("UPDATE",V.Local.bVar)
+
+f.Intrinsic.Control.If(v.Local.sRet,<>,v.Ambient.cancel)
+
+	f.Intrinsic.Control.If(v.Local.bVar)
+		f.Intrinsic.Control.If(v.DataTable.dtLABELS.RowCount,>,0)
+			f.Intrinsic.String.Split(v.Local.sRet,"*!*",v.Local.sRet)
+			gui.Form.txtCust.Text(v.Local.sRet(0))
+			f.Data.DataTable.SetValue("dtLABELS",0,"CUST",V.Local.sRet(0))
+		f.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.Else
+		F.Intrinsic.Control.If(V.DataTable.dtLABELS.RowCount,>,0)
+			F.Data.DataTable.DeleteRow("dtLABELS")
+			F.Data.DataTable.AcceptChanges("dtLABELS")
+		F.Intrinsic.Control.EndIf
+		f.Intrinsic.String.Split(v.Local.sRet,"*!*",v.Local.sRet)
+		gui.Form.txtCust.Text(v.Local.sRet(0))
+		'check to see if we have existing labels for the type we want
+		f.Intrinsic.Control.If(v.Screen.Form!optBOL.Value,=,True)
+			f.Intrinsic.String.Build("select * from V_GCG_5788_LBL_MNT where ass_sys = 'BOL' and cust = '{0}'",v.Local.sRet(0).trim,v.Local.sSql)
+		f.Intrinsic.Control.Else
+			f.Intrinsic.String.Build("select * from V_GCG_5788_LBL_MNT where ass_sys = 'SHP' and cust = '{0}'",v.Local.sRet(0).trim,v.Local.sSql)
+		f.Intrinsic.Control.EndIf
+		'get the data
+		f.Data.DataTable.CreateFromSQL("TEMP","COREDB",V.Local.sSql,TRUE)
+		F.Intrinsic.Control.If(V.DataTable.TEMP.RowCount,>,0)
+			F.Data.DataTable.Merge("TEMP","dtLABELS","FALSE",2)
+			f.Data.DataTable.Close("TEMP")
+			gui.Form.txtSupplier.Text(v.DataTable.dtLABELS(0).SUPPLIER_ID!FIELDVALTRIM)
+		F.Intrinsic.Control.Else
+			f.Data.DataTable.Close("TEMP")
+			F.Intrinsic.Control.CallSub(add_new_line)
+		f.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.EndIf
+f.Intrinsic.Control.EndIf
+
+F.ODBC.Connection!coredb.close
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.cmdBrwCust_Click.End
+
+Program.Sub.browse_bi.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+V.Local.sRet.Declare
+V.Local.sBI.Declare
+
+f.Intrinsic.Control.If(v.Screen.Form!optBOL.Value,=,True)
+	v.Local.sBI.Set("000077")
+f.Intrinsic.Control.ElseIf(v.Screen.Form!optShipping.Value,=,True)
+	v.Local.sBI.Set("000053")
+f.Intrinsic.Control.EndIf
+
+f.Intrinsic.UI.SetBrowserHotTypeAhead(True)
+f.Intrinsic.UI.SetBrowserHotTypeAheadColumn(1)
+
+F.Intrinsic.UI.CommonBrowser(90000,"",v.Local.sRet)
+
+f.Intrinsic.Control.If(v.Local.sRet,<>,v.Ambient.Cancel)
+	f.Intrinsic.String.Split(v.Local.sRet,"*!*",v.Local.sRet)
+	F.Intrinsic.Variable.AddRV("BI",v.Local.sBI)
+	F.Intrinsic.Variable.AddRV("LABEL",V.Local.sRet(0))
+F.Intrinsic.Control.Else
+	F.Intrinsic.Variable.AddRV("BI","CANCEL")
+f.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.browse_bi.End
+
+Program.Sub.txtSupplier_LostFocus.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.sSupplier.Declare
+
+f.Intrinsic.Control.If(v.DataTable.dtLABELS.RowCount,>,0)
+	F.Intrinsic.String.RPad(V.Screen.Form!txtSupplier.TEXT," ",15,V.Local.sSupplier)
+	f.Data.DataTable.SetValue("dtLABELS",0,"SUPPLIER_ID",v.Local.sSupplier)
+f.Intrinsic.Control.Else
+	f.Intrinsic.Control.CallSub(add_new_line)
+f.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.txtSupplier_LostFocus.End
+
+Program.Sub.reset.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+
+'clear the datatable
+f.Data.DataTable.DeleteRow("dtLABELS")
+'clear the fields
+gui.Form.txtCust.Text("")
+gui.Form.txtSupplier.Text("")
+'display the gridview as it may have been hidden during a save command
+gui.Form.GsGCLabels.visible(True)
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.reset.End
+
+Program.Sub.optShipping_Click.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+
+'when changing the option radio button, if there's existing data, clear the screen
+f.Intrinsic.Control.If(v.DataTable.dtLABELS.RowCount,>,0)
+	f.Intrinsic.Control.CallSub(reset)
+f.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.optShipping_Click.End
+
+Program.Sub.optBOL_Click.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+
+'when changing the option radio button, if there's existing data, clear the screen
+f.Intrinsic.Control.If(v.DataTable.dtLABELS.RowCount,>,0)
+	f.Intrinsic.Control.CallSub(reset)
+f.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.optBOL_Click.End
+
+Program.Sub.cmdDelete_Click.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.sSql.Declare
+v.Local.sSql2.Declare
+v.Local.sRet.Declare
+
+
+'build a query to check for the exitence of what we are wanting to delete
+f.Intrinsic.Control.If(v.Screen.Form!optBOL.Value,=,True)
+	f.Intrinsic.String.Build("select * from ASSIGN_CUST_OPT where ASS_SYS = 'BOL' and ASS_SUB_SYS = 'LBL' and LEFT(FILLER1,6) = '{0}'",V.Screen.Form!txtCust.TEXT,V.Local.sSql)
+	f.Intrinsic.String.Build("select BOL_LBL_RPTID from CUST_FORM_INFO where customer = '{0}' and REC = '6'",V.Screen.Form!txtCust.TEXT,V.Local.sSql2)
+f.Intrinsic.Control.ElseIf(v.Screen.Form!optShipping.Value,=,True)
+	f.Intrinsic.String.Build("select * from ASSIGN_CUST_OPT where ASS_SYS = 'SHP' and ASS_SUB_SYS = 'LBL' and LEFT(FILLER1,6) = '{0}'",V.Screen.Form!txtCust.TEXT,V.Local.sSql)
+F.Intrinsic.Control.EndIf
+
+F.ODBC.Connection!COREDB.OPENCOMPANYCONNECTION
+
+F.ODBC.Connection!COREDB.ExecuteAndReturn(v.Local.sSql,v.Local.sRet)
+f.Intrinsic.Control.If(v.Local.sRet.IsNotNullOrWhiteSpace)
+	'the record is there so we'll change the select statement to a delete statement and execute
+	f.Intrinsic.String.Replace(v.Local.sSql,"select *","Delete",v.Local.sSql)
+	f.ODBC.Connection!coredb.execute(v.Local.sSql)
+f.Intrinsic.Control.EndIf
+
+'now we have to check the BOL_LABEL on the customer master
+f.Intrinsic.Control.If(v.Screen.Form!optBOL.Value,=,True)
+	f.ODBC.Connection!coredb.executeandreturn(v.Local.sSql2,v.Local.sRet)
+	'if it comes back null, or if it's not null and it comes back as 000000, then we don't have to run this query.
+	f.Intrinsic.Control.If(v.Local.sRet.IsNotNullOrWhitespace,=,True,AND,v.Local.sRet,<>,"000000")
+		f.Intrinsic.String.Build("update CUST_FORM_INFO set BOL_LBL_RPTID = '000000' WHERE CUSTOMER = '{0}' AND REC = '6'",V.Screen.Form!txtCust.TEXT,V.Local.sSql2)
+		F.ODBC.Connection!COREDB.Execute(v.Local.sSql2)
+	f.Intrinsic.Control.EndIf
+f.Intrinsic.Control.EndIf
+
+
+f.Intrinsic.Control.CallSub(reset)
+
+F.ODBC.Connection!coredb.Close
+
+f.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.cmdDelete_Click.End
+
+Program.Sub.check_view.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.bExists.Declare
+V.Local.bField.Declare
+'George Sandoval 23 Feb 2022 add check view for 2020.1 update from GCG_5788
+
+f.ODBC.Connection!coredb.opencompanyconnection
+'does the view exist
+f.ODBC.Connection!coredb.TableExists("V_GCG_5788_LBL_MNT",V.Local.bExists)
+'does the view contain the field 2020
+f.ODBC.Connection!coredb.FieldExists("V_GCG_5788_LBL_MNT","EMPTY2",V.Local.bField)
+
+'if the view does not exist and we are on 2019.1
+F.Intrinsic.Control.If(V.Local.bExists,=,False,AND,v.Caller.GSSVersion,=,"2019.1")
+	f.ODBC.Connection!coredb.execute("CREATE VIEW V_GCG_5788_LBL_MNT AS SELECT ASSIGN_CUST_OPT .ASS_SYS ,ASSIGN_CUST_OPT .ASS_SUB_SYS ,substring (ASSIGN_CUST_OPT .FILLER1 ,1 ,6 )CUST ,SUBSTRING (ASSIGN_CUST_OPT .FILLER1 ,7 ,6 )DFLT_LBL ,SUBSTRING (ASSIGN_CUST_OPT .FILLER1 ,13 ,10 )EMPTY ,SUBSTRING (ASSIGN_CUST_OPT .FILLER1 ,23 ,6 )MASTER ,SUBSTRING (ASSIGN_CUST_OPT .FILLER1 ,29 ,1 )SERIAL_MSTR ,SUBSTRING (ASSIGN_CUST_OPT .FILLER1 ,30 ,6 )CONTAINER ,SUBSTRING (ASSIGN_CUST_OPT .FILLER1 ,36 ,1 )SERIAL_CNTR ,SUBSTRING (ASSIGN_CUST_OPT .FILLER1 ,37 ,6 )MIXED ,SUBSTRING (ASSIGN_CUST_OPT .FILLER1 ,43 ,1 )SERIAL_MXD ,SUBSTRING (ASSIGN_CUST_OPT .FILLER1 ,44 ,58 )SUPPLIER_ID FROM ASSIGN_CUST_OPT ASSIGN_CUST_OPT WHERE ASSIGN_CUST_OPT .ASS_SYS IN ('SHP' ,'BOL' )AND ASSIGN_CUST_OPT .ASS_SUB_SYS = 'LBL'")
+'if the view does not exist and we are on 2020.1	
+f.Intrinsic.Control.ElseIf(v.Local.bExists,=,False,AND,v.Caller.GSSVersion,>=,"2020.1")
+	f.ODBC.Connection!coredb.Execute("CREATE VIEW V_GCG_5788_LBL_MNT AS SELECT ASSIGN_CUST_OPT.ASS_SYS, ASSIGN_CUST_OPT.ASS_SUB_SYS, substring(ASSIGN_CUST_OPT.FILLER1 ,1 ,6 )CUST, SUBSTRING(ASSIGN_CUST_OPT.FILLER1,7 ,6 )DFLT_LBL, SUBSTRING(ASSIGN_CUST_OPT.FILLER1,13 ,2 )EMPTY2, SUBSTRING(ASSIGN_CUST_OPT.FILLER3 ,9 ,6 )MASTER, SUBSTRING(ASSIGN_CUST_OPT.FILLER3,15 ,1 )SERIAL_MSTR, SUBSTRING(ASSIGN_CUST_OPT.FILLER3,16 ,6 )CONTAINER, SUBSTRING(ASSIGN_CUST_OPT.FILLER3,22 ,1 )SERIAL_CNTR, SUBSTRING(ASSIGN_CUST_OPT.FILLER3,23 ,6 )MIXED, SUBSTRING(ASSIGN_CUST_OPT.FILLER3,29 ,1 )SERIAL_MXD, SUBSTRING(ASSIGN_CUST_OPT.FILLER3,30 ,14 )SUPPLIER_ID FROM ASSIGN_CUST_OPT WHERE ASSIGN_CUST_OPT.ASS_SYS IN ('SHP' ,'BOL' )AND ASSIGN_CUST_OPT.ASS_SUB_SYS = 'LBL'")
+'if the view does exist, and the field empty2 does not exist, then check the version.  This would suggest that the view was created in 2019.1 and we are now on 2020.1.  The view has to be dropped and re-created.  However, if the view does exist, and the version is not >= 2020.1, that means the view was created in 2019.1 and we are still on 2019.1	
+f.Intrinsic.Control.ElseIf(v.Local.bExists,=,True,AND,v.Local.bField,=,False)
+	f.Intrinsic.Control.If(v.Caller.GSSVersion,>=,"2020.1")
+		f.ODBC.Connection!coredb.Execute("DROP VIEW V_GCG_5788_LBL_MNT")
+		F.ODBC.Connection!coredb.Execute("CREATE VIEW V_GCG_5788_LBL_MNT AS SELECT ASSIGN_CUST_OPT.ASS_SYS, ASSIGN_CUST_OPT.ASS_SUB_SYS, substring(ASSIGN_CUST_OPT.FILLER1 ,1 ,6 )CUST, SUBSTRING(ASSIGN_CUST_OPT.FILLER1,7 ,6 )DFLT_LBL, SUBSTRING(ASSIGN_CUST_OPT.FILLER1,13 ,2 )EMPTY2, SUBSTRING(ASSIGN_CUST_OPT.FILLER3 ,9 ,6 )MASTER, SUBSTRING(ASSIGN_CUST_OPT.FILLER3,15 ,1 )SERIAL_MSTR, SUBSTRING(ASSIGN_CUST_OPT.FILLER3,16 ,6 )CONTAINER, SUBSTRING(ASSIGN_CUST_OPT.FILLER3,22 ,1 )SERIAL_CNTR, SUBSTRING(ASSIGN_CUST_OPT.FILLER3,23 ,6 )MIXED, SUBSTRING(ASSIGN_CUST_OPT.FILLER3,29 ,1 )SERIAL_MXD, SUBSTRING(ASSIGN_CUST_OPT.FILLER3,30 ,14 )SUPPLIER_ID FROM ASSIGN_CUST_OPT WHERE ASSIGN_CUST_OPT.ASS_SYS IN ('SHP' ,'BOL' )AND ASSIGN_CUST_OPT.ASS_SUB_SYS = 'LBL'")
+	f.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+
+F.ODBC.Connection!coredb.close
+
+
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.check_view.End
+
+Program.Sub.Comments.Start
+${$5$}$2.0.0.0$}$2
+${$6$}$gsandoval$}$20220223145549235$}$pxyipsmdqasyAY7lJ5+YqAibKN4I37/Y2TRPIn1iA5i3VpfRSh70npexUatxi3xMvrJlQ/SsRpAizHiBaoybyg==
+Program.Sub.Comments.End

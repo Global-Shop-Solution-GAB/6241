@@ -1,0 +1,1712 @@
+﻿Program.Sub.ScreenSU.Start
+Gui.Labels..Create(BaseForm)
+Gui.Labels..Size(5550,2430)
+Gui.Labels..MinX(0)
+Gui.Labels..MinY(0)
+Gui.Labels..Position(0,0)
+Gui.Labels..BackColor(-2147483633)
+Gui.Labels..MaxButton(False)
+Gui.Labels..MinButton(False)
+Gui.Labels..MousePointer(0)
+Gui.Labels..Sizeable(False)
+Gui.Labels..Caption("Form")
+Gui.Labels..AlwaysOnTop(False)
+Gui.Labels..FontName("Tahoma")
+Gui.Labels..FontSize(8.25)
+Gui.Labels..ControlBox(True)
+Gui.Labels..Moveable(True)
+Gui.Labels..ShowInTaskBar(True)
+Gui.Labels..TitleBar(True)
+Gui.Labels..Event(UnLoad,cmdCancel_Click)
+Gui.Labels.lbl1.Create(Label,"Carton Labels",True,1215,255,0,135,615,True,0,"Arial",8,-2147483633,0,0)
+Gui.Labels.lbl1.BorderStyle(0)
+Gui.Labels.lbl2.Create(Label,"Pallet Labels",True,1140,255,0,135,1005,True,0,"Arial",8,-2147483633,0,0)
+Gui.Labels.lbl2.BorderStyle(0)
+Gui.Labels.txtCrtnCopies.Create(TextBox,"1",True,780,300,0,1680,540,True,0,"Arial",8,-2147483643,1)
+Gui.Labels.txtCrtnCopies.NumericOnly(2)
+Gui.Labels.txtCrtnCopies.DefaultValue("1")
+Gui.Labels.lbl3.Create(Label,"Number Of Copies",True,1440,255,0,1440,285,True,0,"Arial",8,-2147483633,0,0)
+Gui.Labels.lbl3.BorderStyle(0)
+Gui.Labels.txtPltCopies.Create(TextBox,"1",True,795,300,0,1680,945,True,0,"Arial",8,-2147483643,1)
+Gui.Labels.txtPltCopies.NumericOnly(2)
+Gui.Labels.txtPltCopies.DefaultValue("1")
+Gui.Labels.ddlCrtnPrinter.Create(DropDownList)
+Gui.Labels.ddlCrtnPrinter.Size(2115,330)
+Gui.Labels.ddlCrtnPrinter.Position(3240,555)
+Gui.Labels.ddlCrtnPrinter.Enabled(True)
+Gui.Labels.ddlCrtnPrinter.Visible(True)
+Gui.Labels.ddlCrtnPrinter.Zorder(0)
+Gui.Labels.ddlCrtnPrinter.FontName("Tahoma")
+Gui.Labels.ddlCrtnPrinter.FontSize(8.25)
+Gui.Labels.ddlPltPrinter.Create(DropDownList)
+Gui.Labels.ddlPltPrinter.Size(2115,330)
+Gui.Labels.ddlPltPrinter.Position(3240,960)
+Gui.Labels.ddlPltPrinter.Enabled(True)
+Gui.Labels.ddlPltPrinter.Visible(True)
+Gui.Labels.ddlPltPrinter.Zorder(0)
+Gui.Labels.ddlPltPrinter.FontName("Tahoma")
+Gui.Labels.ddlPltPrinter.FontSize(8.25)
+Gui.Labels.lblPrinters.Create(Label,"Printer",True,480,210,0,3240,300,True,0,"Arial",8,-2147483633,0,0)
+Gui.Labels.lblPrinters.BorderStyle(0)
+Gui.Labels.cmdPrint.Create(Button)
+Gui.Labels.cmdPrint.Size(855,375)
+Gui.Labels.cmdPrint.Position(1650,1515)
+Gui.Labels.cmdPrint.Caption("Print")
+Gui.Labels.cmdPrint.Event(Click,cmdPrint_Click)
+Gui.Labels.cmdPrint.Enabled(True)
+Gui.Labels.cmdPrint.Visible(True)
+Gui.Labels.cmdPrint.Zorder(0)
+Gui.Labels.cmdPrint.FontName("Tahoma")
+Gui.Labels.cmdPrint.FontSize(8.25)
+Gui.Labels.cmdCancel.Create(Button)
+Gui.Labels.cmdCancel.Size(855,375)
+Gui.Labels.cmdCancel.Position(3240,1530)
+Gui.Labels.cmdCancel.Caption("Cancel")
+Gui.Labels.cmdCancel.Event(Click,cmdCancel_Click)
+Gui.Labels.cmdCancel.Enabled(True)
+Gui.Labels.cmdCancel.Visible(True)
+Gui.Labels.cmdCancel.Zorder(0)
+Gui.Labels.cmdCancel.FontName("Tahoma")
+Gui.Labels.cmdCancel.FontSize(8.25)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+v.Global.sBol.Declare
+v.Global.sCust.Declare
+V.Global.iBIRunID.Declare
+V.Global.iBILogID.Declare
+v.Global.iBIRptID.Declare
+v.Global.bSentinel.Declare
+Program.Sub.Preflight.End
+
+'still need to add the following fields in the output data.  Just need to figure out where it's supposed to come from and how to incorporate it as a standard.
+'for the MASTER label
+	'CONTAINER
+	'CRTN_CODE
+	'MATLHANDLER
+'for the CONTAINER label
+	'13Z
+	'15Z
+	'17Z
+	'MATLHANDLER
+	'UF4
+'for the MIXED label
+Program.Sub.Main.Start
+'Bryan Pham
+'01/12/2021
+'Modified 5792 - adding SSCC serilization
+
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+
+
+
+f.Intrinsic.Control.If(v.PASSED.CALLING-PGM,<>,"SHP301")
+	F.Intrinsic.Control.End
+f.Intrinsic.Control.EndIf
+
+
+v.Passed.CANCEL.Set(1)
+
+'Getting run ID passed down
+V.Global.iBIRunID.Set(V.Passed.BIP_BIRUNID.Long)
+'Getting log ID passed down
+V.Global.iBILogID.Set(V.Passed.BIP_LOGID.Long)
+'Getting Sentinel flag passed down
+V.Global.bSentinel.Set(True)
+
+
+'Getting the BOL number
+V.Global.sBol.Set(V.Passed.BIP_Waybill)
+'get passed report ID
+v.Global.iBIRptID.Set(v.Passed.009001)
+
+
+f.ODBC.Connection!comm.opencommonconnection
+
+'f.Data.Dictionary.CreateFromSQL("dcPrinters","comm","select PRID, IF(SENTINELALIAS > '',SENTINELALIAS,PRINTERNAME) AS LABEL_PRINTER FROM SERVER_PRINTERS where SENTINELENABLED = 1",4)
+f.Data.Dictionary.CreateFromSQL("dcPrinters","comm","select PRID, IF(SENTINELALIAS > '',SENTINELALIAS,PRINTERNAME) AS LABEL_PRINTER FROM SERVER_PRINTERS where SENTINELENABLED = 1",5)
+
+f.ODBC.Connection!comm.Close
+
+gui.Labels.ddlCrtnPrinter.AddItems("Dictionary","dcPrinters")
+gui.Labels.ddlPltPrinter.AddItems("Dictionary","dcPrinters")
+
+gui.Labels..Show
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.Catching.Start
+v.Local.sError.declare(string)
+F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_5792_BOL_LABELS.g2u",V.Ambient.NewLine,v.Args.sub,V.Args.errorno,V.args.errordesc,V.Local.sError)
+f.Intrinsic.UI.Msgbox(v.Local.sError)
+F.Intrinsic.Control.CallSub(UNLOAD)
+Program.Sub.Catching.End
+Program.Sub.Unload.Start
+f.Intrinsic.Control.End
+Program.Sub.Unload.End
+
+Program.Sub.get_settings.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.sSql.Declare
+v.Local.sRet.Declare
+v.Global.bMixed.Declare
+v.Global.sMixed.Declare
+
+f.ODBC.Connection!coredb.opencompanyconnection
+
+'if the customer is blank, then we're coming from the BI report which doesn't pass the customer
+f.Intrinsic.Control.If(v.Global.sCust.IsNullOrWhiteSpace)
+	f.Intrinsic.String.Build("select cust_no from v_bol_header where waybill_no = '{0}'",v.Global.sBol,v.Local.sSql)
+
+	f.ODBC.Connection!coredb.executeandreturn(V.Local.sSql,V.Local.SRET)
+	f.Intrinsic.Control.If(v.Local.sRet.IsNotNullOrWhiteSpace)
+		v.Global.sCust.Set(v.Local.sRet)
+	f.Intrinsic.Control.EndIf
+f.Intrinsic.Control.EndIf
+
+'check to see if the customer is using mixed pallets or not.
+F.Global.General.ReadOption("100502",0,"False","0000",V.Global.bMixed)
+f.Intrinsic.Control.If(v.Global.bMixed,=,True)
+	f.Global.General.ReadOption("100502",1,"","0001",v.Global.sMixed)
+f.Intrinsic.Control.EndIf
+
+'get the report ID's that this customer uses
+f.Intrinsic.String.Build("select * from V_GCG_5788_LBL_MNT where ASS_SYS = 'BOL' and ASS_SUB_SYS = 'LBL' and  cust = '{0}'",v.Global.sCust.Left6,v.Local.sSql)
+f.Data.DataTable.CreateFromSQL("LBLTYPE","COREDB",V.Local.sSql,True)
+
+'If we have a record in the datatable, that means the customer is using a custom BOL Label(s).
+f.Intrinsic.Control.If(V.DataTable.LBLTYPE.RowCount,>,0)
+'---------------- "get copy requirements" has not been coded yet  DLF 2/9/2020
+'George Sandoval 23 Feb 2022 - Change Empty to Empty2
+'	F.Intrinsic.Control.If(V.DataTable.LBLTYPE(0).EMPTY!FIELDVALTRIM,=,"Y")
+	F.Intrinsic.Control.If(V.DataTable.LBLTYPE(0).EMPTY2!FIELDVALTRIM,=,"Y")
+		F.Intrinsic.Control.CallSub(get_copy_requirement)
+	F.Intrinsic.Control.EndIf
+	'we have custom labels so lets set the serialization - start with containers then pallets (no need to differentiate between master pallets and mixed yet)
+	f.Intrinsic.Control.If(v.DataTable.LBLTYPE(0).CONTAINER!FIELDVALTRIM,>,"",AND,V.DataTable.LBLTYPE(0).SERIAL_CNTR!FIELDVALTRIM,<>,"")
+		F.Intrinsic.Control.CallSub(serial_containers)
+	F.Intrinsic.Control.EndIf
+	'serialize pallets
+	f.Intrinsic.Control.If(v.DataTable.LBLTYPE(0).MASTER!FIELDVALTRIM,>,"",AND,v.DataTable.LBLTYPE(0).SERIAL_MSTR!FIELDVALTRIM,<>,"")
+		F.Intrinsic.Control.CallSub(serial_pallet)
+	f.Intrinsic.Control.EndIf
+	'check to see if they are using docks for any of their customers
+	f.Intrinsic.Control.CallSub(get_dock_info)
+	f.Intrinsic.Control.CallSub(get_data)
+f.Intrinsic.Control.Else
+	'if there's no record, print the standard BOL labels
+	f.Intrinsic.Control.CallSub(print_standard)
+f.Intrinsic.Control.EndIf
+
+F.ODBC.Connection!coredb.close
+
+f.Intrinsic.Control.End
+
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.get_settings.End
+
+Program.Sub.print_standard.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.sSql.Declare
+v.Local.iRet.Declare
+v.Local.sPrinter.Declare
+v.Local.iCartons.Declare
+v.Local.iPallets.Declare
+v.Local.sCartons.Declare
+v.Local.sPallets.Declare
+
+
+'Loading data from Y table, as being label being printed from Menu, Selecting all fields as all fields are transferred over from Y table to Z table
+F.Intrinsic.String.Build("Select * From Y_OE_SHIP_BOL where RUNID = {0}",V.Global.iBIRunID,V.Local.sSql)
+f.Data.DataTable.CreateFromSQL("LABELS","COREDB",V.Local.sSql,True)
+
+'get max values
+F.Data.DataTable.Compute("LABELS","max(CNTNR_NO)","PALLET_NO <> '000000'",V.Local.sCartons)
+F.Data.Datatable.Compute("LABELS","max(PALLET_NO)","PALLET_NO <> '000000'",v.Local.sPallets)
+
+'add carton and pallet counts
+f.Data.DataTable.AddColumn("LABELS","TOTAL_CARTONS","STRING")
+f.Data.DataTable.AddColumn("LABELS","TOTAL_PALLETS","STRING")
+F.Data.DataTable.SetValue("LABELS",-1,"TOTAL_CARTONS",V.Local.sCartons)
+F.Data.DataTable.SetValue("LABELS",-1,"TOTAL_PALLETS",V.Local.sPallets)
+
+f.Intrinsic.Control.If(v.DataTable.LABELS.RowCount,>,0)
+	f.Intrinsic.Control.CallSub(get_bi_start_logging)
+	
+	f.Data.DataTable.SetValue("LABELS",-1,"RUNID",V.Global.iBIRunID)
+	f.Data.DataTable.SetValue("LABELS",-1,"LOGID",V.Global.iBILogID)
+	'is the sequence a codesoft label?	
+	f.Intrinsic.Control.If(v.Global.bSentinel)
+		f.Global.BI.StopLogging(v.Global.iBILogID)
+		'print the codesoft label
+		v.Local.sPrinter.Set(v.Screen.Labels!ddlCrtnPrinter.text)
+		f.Intrinsic.Control.If(v.Local.sPrinter.Trim,>,"")
+			f.Global.BI.PrintCodesoftLabelFromDatatable(v.Global.iBIRunID,v.Global.iBILogID,"LABELS",v.Local.sPrinter,True)
+		f.Intrinsic.Control.Else
+			f.Global.BI.PrintCodesoftLabelFromDatatable(v.Global.iBIRunID,v.Global.iBILogID,"LABELS","",True)
+		f.Intrinsic.Control.EndIf
+			
+	f.Intrinsic.Control.Else
+		'only the standard labels can print in a crystal report
+		f.Data.DataTable.AddColumn("LABELS","BIRUNID","LONG",V.Global.iBIRunID)
+		F.Data.DataTable.RemoveColumn("LABELS","RUNID")
+		F.Data.DataTable.SaveToDB("LABELS","COREDB","Z_OE_SHIP_BOL")
+		
+		F.Global.BI.StopLogging(V.Global.iBILogID)
+		'call the standard crystal report
+
+		Function.Global.BI.RunReportPreProcessor(V.Global.iBIRunID,V.Global.iBILogID,"","","",-1,True,"",-1,"",-1,"","",v.Local.iRet)
+	
+	f.Intrinsic.Control.EndIf
+f.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.print_standard.End
+
+Program.Sub.serial_containers.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.sSql.Declare
+v.Local.sSupplier.Declare
+v.Local.sSupplier.Set(V.DataTable.LBLTYPE(0).SUPPLIER_ID!FIELDVALTRIM)
+
+'1 - regular serialization
+'2 - SSCC serailization
+
+f.Intrinsic.Control.If(V.DataTable.LBLTYPE(0).SERIAL_MSTR!FIELDVALTRIM,=,"1")
+	'update the BOL_CARTON_NUM table for history and EDI
+	F.Intrinsic.String.Build("update BOL_CARTON_NUM SET USER_DFND_NO = '{0}' + '1' + RIGHT(BOL_CARTON_NUM.PCK_NO,6) + RIGHT(BOL_CARTON_NUM.CRTN_NO,2) WHERE WAYBILL_NO = '{1}'",V.DataTable.LBLTYPE(0).SUPPLIER_ID!FIELDVALTRIM,V.Global.sBol,V.Local.sSql)
+	
+	F.ODBC.Connection!COREDB.Execute(v.Local.sSql)
+	
+	'update the Y_OE_SHIP_BOL table for printing labels
+	f.Intrinsic.String.Build("UPDATE Y_OE_SHIP_BOL set USER_DFND_NO =  '{0}' + '1' + RIGHT(Y_OE_SHIP_BOL.PCK_NO,6) + RIGHT(RTRIM(Y_OE_SHIP_BOL.CNTNR_NO),2) WHERE WAYBILL_NO = '{1}' AND CNTNR_NO > '000000' AND PALLET_NO > '000000' AND RUNID = '{2}'",V.DataTable.LBLTYPE(0).SUPPLIER_ID!FIELDVALTRIM,V.Global.sBol,V.Global.iBIRunID,V.Local.sSql)
+	
+	F.ODBC.Connection!COREDB.Execute(v.Local.sSql)
+	
+	
+f.Intrinsic.Control.ElseIf(V.DataTable.LBLTYPE(0).SERIAL_MSTR!FIELDVALTRIM,=,"2")
+	
+		'update the BOL_CARTON_NUM table for history and EDI
+	f.Intrinsic.Control.If(v.Local.sSupplier.Length,>,7)
+		'update the BOL_CARTON_NUM table for history and EDI
+		F.Intrinsic.String.Build("Update BOL_CARTON_NUM SET USER_DFND_NO = '00' + '2' + '{0}' + RIGHT(BOL_CARTON_NUM.PCK_NO,5) + RIGHT(BOL_CARTON_NUM.CRTN_NO,2) WHERE WAYBILL_NO = '{1}'",V.DataTable.LBLTYPE(0).SUPPLIER_ID!FIELDVALTRIM,V.Global.sBol,V.Local.sSql)
+		
+		F.ODBC.Connection!COREDB.Execute(v.Local.sSql)
+		
+		'update the Y_OE_SHIP_BOL table for printing labels
+		f.Intrinsic.String.Build("UPDATE Y_OE_SHIP_BOL set USER_DFND_NO = '00' + '2' + '{0}' + RIGHT(Y_OE_SHIP_BOL.PCK_NO,5) + RIGHT(RTRIM(Y_OE_SHIP_BOL.CNTNR_NO),2) WHERE WAYBILL_NO = '{1}' AND CNTNR_NO > '000000' AND PALLET_NO > '000000' AND RUNID = '{2}'",V.DataTable.LBLTYPE(0).SUPPLIER_ID!FIELDVALTRIM,V.Global.sBol,V.Global.iBIRunID,V.Local.sSql)
+		
+		F.ODBC.Connection!COREDB.Execute(v.Local.sSql)
+		
+	f.Intrinsic.Control.Else
+		'update the BOL_CARTON_NUM table for history and EDI
+		F.Intrinsic.String.Build("Update BOL_CARTON_NUM SET USER_DFND_NO = '00' + '2' + '{0}' + RIGHT(BOL_CARTON_NUM.PCK_NO,7) + RIGHT(BOL_CARTON_NUM.CRTN_NO,2) WHERE WAYBILL_NO = '{1}'",V.DataTable.LBLTYPE(0).SUPPLIER_ID!FIELDVALTRIM,V.Global.sBol,V.Local.sSql)
+		
+		F.ODBC.Connection!COREDB.Execute(v.Local.sSql)
+		
+		'update the Y_OE_SHIP_BOL table for printing labels
+		f.Intrinsic.String.Build("UPDATE Y_OE_SHIP_BOL set USER_DFND_NO = '00' + '2' + '{0}' + RIGHT(Y_OE_SHIP_BOL.PCK_NO,7) + RIGHT(RTRIM(Y_OE_SHIP_BOL.CNTNR_NO),2) WHERE WAYBILL_NO = '{1}' AND CNTNR_NO > '000000' AND PALLET_NO > '000000' AND RUNID = '{2}'",V.DataTable.LBLTYPE(0).SUPPLIER_ID!FIELDVALTRIM,V.Global.sBol,V.Global.iBIRunID,V.Local.sSql)
+		
+		F.ODBC.Connection!COREDB.Execute(v.Local.sSql)
+	f.Intrinsic.Control.EndIf
+		
+f.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.serial_containers.End
+
+Program.Sub.serial_pallet.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.sSql.Declare
+v.Local.sSupplier.Declare
+v.Local.sSupplier.Set(V.DataTable.LBLTYPE(0).SUPPLIER_ID!FIELDVALTRIM)
+
+'1 - regular serialization
+'2 - SSCC serailization
+
+f.Intrinsic.Control.If(V.DataTable.LBLTYPE(0).SERIAL_MSTR!FIELDVALTRIM,=,"1")
+	'update the BOL_PALLET_NUM table for history and EDI
+	f.Intrinsic.String.Build("update BOL_PALLET_NUM SET USR_DFND_NO = '{0}' + '0' + RIGHT(BOL_PALLET_NUM.PCK_NO,6) + RIGHT(BOL_PALLET_NUM.PLLT_NO,2) WHERE WAYBILL_NO = '{1}'",V.DataTable.LBLTYPE(0).SUPPLIER_ID!FIELDVALTRIM,V.Global.sBol,V.Local.sSql)
+	
+	f.ODBC.Connection!coredb.execute(V.Local.sSQL)
+	
+	'update the Y_OE_SHIP_BOL table for printing labels
+	f.Intrinsic.String.Build("UPDATE Y_OE_SHIP_BOL set USER_DFND_NO =  '{0}' + '0' + RIGHT(Y_OE_SHIP_BOL.PCK_NO,6) + RIGHT(RTRIM(Y_OE_SHIP_BOL.CNTNR_NO),2) WHERE WAYBILL_NO = '{1}' AND CNTNR_NO > '000000' AND PALLET_NO = '000000' AND RUNID = '{2}'",V.DataTable.LBLTYPE(0).SUPPLIER_ID!FIELDVALTRIM,V.Global.sBol,V.Global.iBIRunID,V.Local.sSql)
+	
+	F.ODBC.Connection!COREDB.Execute(v.Local.sSql)
+	
+f.Intrinsic.Control.ElseIf(V.DataTable.LBLTYPE(0).SERIAL_MSTR!FIELDVALTRIM,=,"2")
+	
+	f.Intrinsic.Control.If(v.Local.sSupplier.Length,>,7)
+	'update the BOL_PALLET_NUM table for history and EDI
+		f.Intrinsic.String.Build("Update BOL_PALLET_NUM SET USR_DFND_NO = '00' + '1' + '{0}' + RIGHT(BOL_PALLET_NUM.PCK_NO,5) + RIGHT(BOL_PALLET_NUM.PLLT_NO,2) WHERE WAYBILL_NO = '{1}'",V.DataTable.LBLTYPE(0).SUPPLIER_ID!FIELDVALTRIM, V.Global.sBol,V.Local.sSql)
+		
+		f.ODBC.Connection!coredb.execute(V.Local.sSQL)
+		
+		'update the Y_OE_SHIP_BOL table for printing labels
+		f.Intrinsic.String.Build("UPDATE Y_OE_SHIP_BOL set USER_DFND_NO =  '00' + '1' + '{0}' + RIGHT(Y_OE_SHIP_BOL.PCK_NO,5) + RIGHT(RTRIM(Y_OE_SHIP_BOL.CNTNR_NO),2) WHERE WAYBILL_NO = '{1}' AND CNTNR_NO > '000000' AND PALLET_NO = '000000' AND RUNID = '{2}'",V.DataTable.LBLTYPE(0).SUPPLIER_ID!FIELDVALTRIM,V.Global.sBol,V.Global.iBIRunID,V.Local.sSql)
+		
+		F.ODBC.Connection!COREDB.Execute(v.Local.sSql)
+		
+
+	f.Intrinsic.Control.Else
+		'update the BOL_PALLET_NUM table for history and EDI
+		f.Intrinsic.String.Build("Update BOL_PALLET_NUM SET USR_DFND_NO = '00' + '1' + '{0}' + RIGHT(BOL_PALLET_NUM.PCK_NO,7) + RIGHT(BOL_PALLET_NUM.PLLT_NO,2) WHERE WAYBILL_NO = '{1}'",V.DataTable.LBLTYPE(0).SUPPLIER_ID!FIELDVALTRIM, V.Global.sBol,V.Local.sSql)
+		
+		f.ODBC.Connection!coredb.execute(V.Local.sSQL)
+		
+		'update the Y_OE_SHIP_BOL table for printing labels
+		f.Intrinsic.String.Build("UPDATE Y_OE_SHIP_BOL set USER_DFND_NO =  '00' + '1' + '{0}' + RIGHT(Y_OE_SHIP_BOL.PCK_NO,7) + RIGHT(RTRIM(Y_OE_SHIP_BOL.CNTNR_NO),2) WHERE WAYBILL_NO = '{1}' AND CNTNR_NO > '000000' AND PALLET_NO = '000000' AND RUNID = '{2}'",V.DataTable.LBLTYPE(0).SUPPLIER_ID!FIELDVALTRIM,V.Global.sBol,V.Global.iBIRunID,V.Local.sSql)
+		
+		F.ODBC.Connection!COREDB.Execute(v.Local.sSql)
+		
+	f.Intrinsic.Control.EndIf
+	
+f.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.serial_pallet.End
+
+Program.Sub.get_dock_info.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.sSql.Declare
+v.Local.sRet.Declare
+v.Global.iDock.Declare(Long,0)
+
+
+'check the line item user fields for dock info
+f.ODBC.Connection!coredb.executeandreturn("select KEY_ID from V_OE_USER_FLDS_LN where LABEL = 'DOCK#'",V.Local.sRET)
+F.Intrinsic.Control.If(V.Local.sRet.IsNotNullOrWhiteSpace)
+	v.Global.iDock.Set(v.Local.sRet)
+F.Intrinsic.Control.EndIf
+
+'check company options for dock info 
+f.ODBC.Connection!coredb.executeandreturn("select ID from v_op_header where text1 = 'DOCK#'",V.Local.sRet)
+F.Intrinsic.Control.If(V.Local.sRet.IsNotNullOrWhiteSpace)
+	f.Intrinsic.Control.SelectCase(v.Local.sRet)
+		f.Intrinsic.Control.Case(400398)
+			v.Global.iDock.set(6)
+		f.Intrinsic.Control.Case(400399)
+			v.Global.iDock.Set(7)
+	f.Intrinsic.Control.EndSelect
+F.Intrinsic.Control.EndIf
+
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.get_dock_info.End
+
+Program.Sub.get_data.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.sSql.Declare
+
+'get data for mixed pallets
+f.Intrinsic.Control.If(v.DataTable.LBLTYPE(0).MIXED!FIELDVALTRIM,>,"")
+	f.Intrinsic.Control.CallSub(create_label_datatable,"MIXED",True)
+	f.Intrinsic.Control.CallSub(get_cartons)
+	f.Intrinsic.Control.CallSub(get_pallets)
+	f.Intrinsic.Control.CallSub(get_pack_detail)
+	F.Intrinsic.Control.CallSub(build_carton_data)
+	F.Intrinsic.Control.CallSub(build_pallet_data)
+	F.Intrinsic.Control.CallSub(fix_table_names)
+	F.Intrinsic.Control.CallSub(add_company_data)
+	f.Intrinsic.Control.CallSub(make_copies)
+	f.Intrinsic.Control.CallSub(print_labels)
+F.Intrinsic.Control.ElseIf(v.DataTable.LBLTYPE(0).MASTER!FIELDVALTRIM,>,"",AND,V.DataTable.LBLTYPE(0).CONTAINER!FIELDVALTRIM,>,"")
+	'company options might be set for mixed pallets, but the customer itself might not be setup for mixed labels.
+	f.Intrinsic.Control.CallSub(get_label_data)
+	f.Intrinsic.Control.CallSub(separate_master_carton,"PALLET","TRUE","CARTON","TRUE")
+	F.Intrinsic.Control.CallSub(add_company_data)
+	f.Intrinsic.Control.CallSub(make_copies)
+	f.Intrinsic.Control.CallSub(print_labels)
+F.Intrinsic.Control.ElseIf(v.DataTable.LBLTYPE(0).MASTER!FIELDVALTRIM,=,"",AND,V.DataTable.LBLTYPE(0).CONTAINER!FIELDVALTRIM,>,"")
+	f.Intrinsic.Control.CallSub(get_label_data)
+	f.Intrinsic.Control.CallSub(separate_master_carton,"PALLET","FALSE","CARTON","TRUE")
+	F.Intrinsic.Control.CallSub(add_company_data)
+	f.Intrinsic.Control.CallSub(make_copies)
+	f.Intrinsic.Control.CallSub(print_labels)
+f.Intrinsic.Control.ElseIf(v.DataTable.LBLTYPE(0).MASTER!FIELDVALTRIM,>,"",AND,V.DataTable.LBLTYPE(0).CONTAINER!FIELDVALTRIM,=,"")
+	'they're using a single custom label, no containers or mixed labels
+	f.Intrinsic.Control.CallSub(get_label_data)
+	f.Intrinsic.Control.CallSub(separate_master_carton,"PALLET","TRUE","CARTON","FALSE")
+	F.Intrinsic.Control.CallSub(add_company_data)
+	f.Intrinsic.Control.CallSub(make_copies)
+	f.Intrinsic.Control.CallSub(print_labels)
+f.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.get_data.End
+
+Program.Sub.create_label_datatable.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.sSql.Declare
+V.Local.sPart.Declare
+v.Local.sCustPart.Declare
+v.Local.sQty.Declare
+v.Local.sPacks.Declare
+V.Local.sLot.Declare
+v.Local.iCount.Declare
+v.Local.iTable.Declare
+v.Local.sTable.Declare
+v.Local.bArgs.Declare
+
+f.Intrinsic.Variable.ArgExists("MIXED",V.Local.bArgs)
+
+F.Intrinsic.Control.If(V.Local.bArgs)
+	'Create a blank datatable for dtMixedC and dtMixedP
+	f.Data.DataTable.CreateFromSQL("dtMixedC","coredb","select top 0 * from v_y_oe_ship_bol",True)
+	f.Data.DataTable.AddColumn("dtMixedC","TOTAL_PALLETS","Long")
+	f.Data.DataTable.AddColumn("dtMixedC","TOTAL_CARTONS","Long")
+	f.Data.DataTable.Clone("dtMixedC","dtMixedP",True)
+	f.Data.DataTable.Clone("dtMixedC","dtCrtn",True)
+	f.Data.DataTable.AddColumn("dtCrtn","NUMBER_OF_PACKS","LONG")
+	f.Data.DataTable.Clone("dtMixedC","dtPllt",True)
+	F.Data.DataTable.AddColumn("dtPllt","NUMBER_OF_PACKS","LONG")
+	'in this loop we are just adding the columns to the dtMixed datatables that we need for the mixed label
+	f.Intrinsic.Control.For(v.Local.iTable,0,1,1)
+		f.Intrinsic.Control.If(v.Local.iTable,=,0)
+			v.Local.sTable.Set("dtMixedC")
+		f.Intrinsic.Control.Else
+			v.Local.sTable.Set("dtMixedP")
+		f.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.For(V.Local.iCount,0,7,1)
+			F.Intrinsic.Control.If(V.Local.iCount,=,0)
+				f.Data.DataTable.AddColumn(v.Local.sTable,"NUMBER_OF_PACKS","LONG")
+			F.Intrinsic.Control.Else
+				F.Intrinsic.String.Build("PART{0}",V.Local.iCount,v.Local.sPart)
+				f.Intrinsic.String.Build("CUST_PART{0}",V.Local.iCount,V.Local.sCustPart)
+				F.Intrinsic.String.Build("NUMBER_OF_PACKS{0}",V.Local.iCount,V.Local.sPacks)
+				F.Intrinsic.String.Build("QTY_ON_LABEL{0}",V.Local.iCount,v.Local.sQty)
+				f.Intrinsic.String.Build("LOT{0}",V.Local.iCount,V.Local.sLot)
+				f.Data.DataTable.AddColumn(v.Local.sTable,v.Local.sPart,"STRING")
+				F.Data.DataTable.AddColumn(v.Local.sTable,v.Local.sCustPart,"STRING")
+				F.Data.DataTable.AddColumn(v.Local.sTable,V.Local.sPacks,"LONG")
+				F.Data.DataTable.AddColumn(v.Local.sTable,V.Local.sQty,"FLOAT")
+				F.Data.DataTable.AddColumn(V.Local.sTable,V.Local.sLot,"STRING")
+			F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.Next(V.Local.iCount)
+	f.Intrinsic.Control.Next(v.Local.iTable)
+
+F.Intrinsic.Control.EndIf
+	
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.create_label_datatable.End
+
+Program.Sub.get_cartons.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.sSql.Declare
+v.Local.iCount.Declare
+v.Local.iRet.Declare
+v.Local.sRet.Declare
+V.Local.iParts.Declare
+v.Local.iLots.Declare
+v.Local.iRecs.Declare
+
+f.Intrinsic.String.Build("SELECT PCK_NO, CRTN_NO, CRTN_CD, PKGD_WEIGHT, TRACKING_NO, USER_DFND_NO, DIM_UOM, LENGTH, WIDTH, HEIGHT, LENGTH_CENT, WIDTH_CENT, HEIGHT_CENT, LABEL_FLAG, CUST_NO, SHIP_DATE, CRTN_WEIGHT, CTNR_SERIAL_NO, WAYBILL_NO, BOL_DATE, COST, DECLARED_VAL, INSURED_VAL, BLPNO_TYPE, SIGN_OPT FROM V_BOL_CARTON_NUM WHERE WAYBILL_NO = '{0}' and LABEL_FLAG = 'Y' order by CRTN_NO ASC",v.Global.sBol,v.Local.sSql)
+
+F.Data.DataTable.CreateFromSQL("dtCartons","coredb",v.Local.sSql,True)
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.get_cartons.End
+
+Program.Sub.get_pallets.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.sSql.Declare
+
+
+F.Intrinsic.String.Build("select PCK_NO, PLLT_NO, PLLT_CD, PLLT_WEIGHT, PKGD_WEIGHT, TRCKNG_NO, USR_DFND_NO, DIM_UOM, LENGTH, WIDTH, HEIGHT, LENGTH_CENT, WIDTH_CENT, HEIGHT_CENT, LABEL_FLAG, CUST_NO, SHP_DATE, CTNR_SERIAL_NO, WAYBILL_NO, BOL_DATE, COST, DECLARED_VAL, INSURED_VAL, BLPNO_TYPE from v_bol_pallet_num WHERE WAYBILL_NO = '{0}' AND LABEL_FLAG = 'Y' order by PLLT_NO ASC",V.Global.sBol,V.Local.sSql)
+
+F.Data.DataTable.CreateFromSQL("dtPallets","coredb",v.Local.sSql,True)
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.get_pallets.End
+
+Program.Sub.get_pack_detail.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.sSql.Declare
+
+F.Intrinsic.String.Build("select * from v_bol_pack_dtl where waybill_no = '{0}'",V.Global.sBol,V.Local.sSql)
+
+f.Data.DataTable.CreateFromSQL("dtPackDtl","coredb",v.Local.sSql,True)
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.get_pack_detail.End
+
+Program.Sub.build_carton_data.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.sSql.Declare
+v.Local.sRet.Declare
+v.Local.iCount.Declare
+v.Local.iRecs.Declare
+v.Local.iLots.Declare
+v.Local.iParts.Declare
+v.Local.fCartonQty.Declare
+v.Local.iCartons.Declare
+v.Local.iPallets.Declare
+
+f.Data.DataTable.Compute("dtCartons","max(CRTN_NO)","",V.Local.iCartons)
+f.Data.DataTable.Compute("dtPallets","max(PLLT_NO)","",v.Local.iPallets)
+
+
+'for each carton we need to determine if it's a single record, multiple parts, or multiple lots. Each scenario has a different dataset and output for the label.
+f.Intrinsic.Control.For(v.Local.iCount,0,v.DataTable.dtCartons.RowCount--,1)
+	'this tells us how many records, lots, and part#'s are in the carton, as well as the total quantity.
+	f.Intrinsic.String.Build("select count(CRTN_NO) as recs, count(distinct(lot)) as lots, count(distinct(part)) as part, sum(qty) as CARTON_QTY  FROM V_BOL_PACK_DTL WHERE WAYBILL_NO = '{0}' AND CRTN_NO = '{1}'",V.Global.sBol,V.DataTable.dtCartons(V.Local.iCount).CRTN_NO!FIELDVALTRIM,v.Local.sSql)
+	f.ODBC.Connection!coredb.executeandreturn(V.Local.sSql,V.Local.sRet)
+	f.Intrinsic.String.Split(v.Local.sRet,"*!*",v.Local.sRet)
+	v.Local.iRecs.Set(v.Local.sRet(0))
+	v.Local.iLots.Set(v.Local.sRet(1))
+	v.Local.iParts.Set(v.Local.sRet(2))
+	v.Local.fCartonQty.Set(v.Local.sRet(3))
+	f.Intrinsic.Control.If(v.Local.iRecs,=,1)
+		'there's only 1 record so we can select it and merge it with the dtCrtn table
+		f.Intrinsic.String.Build("select BOL.*, CAST({2} AS INTEGER) AS TOTAL_CARTONS, CAST({3} AS INTEGER) AS TOTAL_PALLETS from v_y_oe_ship_bol BOL where RUNID = '{0}' and PALLET_NO <> 0 AND CNTNR_NO = {1}",V.Global.iBIRunID,V.DataTable.dtCartons(V.Local.iCount).CRTN_NO!FIELDVALLONG,V.Local.iCartons,V.Local.iPallets,V.Local.sSql)
+		
+		f.Data.DataTable.CreateFromSQL("CartonTemp","coredb",v.Local.sSql,True)
+		f.Data.DataTable.Merge("CartonTemp","dtCrtn",True,1)
+		f.Data.DataTable.Close("CartonTemp")
+	f.Intrinsic.Control.Else
+		f.Intrinsic.Control.If(v.Local.iParts,>,1)
+			'there's more than 1 part, that means we have to build out the 
+			f.Intrinsic.Control.CallSub(add_mixed_carton_data,"CARTON",V.DataTable.dtCartons(V.Local.iCount).CRTN_NO!FIELDVALTRIM,"QTY",V.Local.fCartonQty,"PARTS",V.Local.iParts,"PACKNO",v.DataTable.dtCartons(v.Local.iCount).PCK_NO!FIELDVALTRIM)
+		F.Intrinsic.Control.ElseIf(V.Local.iLots,>,1)
+			F.Intrinsic.Control.CallSub(add_multilot_carton_data,"CARTON",V.DataTable.dtCartons(V.Local.iCount).CRTN_NO!FIELDVALTRIM,"QTY",V.Local.fCartonQty,"CARTONS",V.Local.iCartons,"PALLETS",V.Local.iPallets)
+		f.Intrinsic.Control.EndIf
+	f.Intrinsic.Control.EndIf
+
+f.Intrinsic.Control.Next(v.Local.iCount)
+
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.build_carton_data.End
+
+Program.Sub.add_mixed_carton_data.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.sSql.Declare
+v.Local.sRet.Declare
+v.Local.iCount.Declare
+V.Local.iRows.Declare(LONG,-1)
+V.Local.sPart.Declare
+v.Local.sCustPart.Declare
+v.Local.sPacks.Declare
+v.Local.sQtyOnLbl.Declare
+V.Local.sLot.Declare
+v.Local.sFilter.Declare
+v.Local.sRow.Declare
+v.Local.iCartons.Declare
+v.Local.sFullRow.Declare
+v.Local.fLoops.Declare
+v.Local.iLoops.Declare
+v.Local.iLoop.Declare
+V.Local.iStart.Declare
+V.Local.iParts.Declare
+v.Local.iField.Declare
+V.Local.fQtyPackaged.Declare
+
+'need to determine how many times to run this loop based on the number of parts that were passed in.
+'if there are more than 8 parts, we will have to loop more than once
+
+'calculate the number of loops
+f.Intrinsic.Control.If(v.Args.PARTS.Long,>,8)
+	f.Intrinsic.Math.Div(v.Args.PARTS.Long,8,v.Local.fLoops)
+	'set iLoops to the whole number value of floops.
+	v.Local.iLoops.Set(v.Local.fLoops)
+	'see how many rows we can account for, and how many are not accounted for yet.
+	f.Intrinsic.Math.Mult(v.Local.iLoops,8,v.Local.iParts)
+	f.Intrinsic.Control.If(V.Args.PARTS.Long,>,v.Local.iParts)
+		'if we have extra rows we have to add a loop
+		f.Intrinsic.Math.Add(v.Local.iLoops,1,v.Local.iLoops)
+		'we need to know how many rows are left over for the last label
+		f.Intrinsic.Math.Sub(v.Args.PARTS.Long,v.Local.iParts,v.Local.iParts)
+		'by default we can put 8 parts per label.  If iRows < 8, then we only need to add that number of parts to the last label.
+	f.Intrinsic.Control.EndIf
+f.Intrinsic.Control.Else
+	'if args.parts <= 8, then we only have to do 1 loop and account for the number of parts that exist in args.parts
+	v.Local.iLoops.Set(1)
+	v.Local.iParts.Set(v.Args.PARTS.Long)
+f.Intrinsic.Control.EndIf
+
+
+f.Data.DataTable.Compute("dtCartons","max(CRTN_NO)","",v.Local.iCartons)
+'the passed carton has multiple parts.
+f.Intrinsic.Control.If(v.DataTable.dtMixedTemp.Exists,=,False)
+	f.Data.DataTable.Clone("dtMixedC","dtMixedTemp",True)
+f.Intrinsic.Control.EndIf
+
+
+	f.Intrinsic.String.Build("select top 1 * from v_y_oe_ship_bol where RUNID = '{0}' and PALLET_NO <> '000000' AND CNTNR_NO = '{1}'",V.Global.iBIRunID,V.Args.CARTON.RIGHT6,V.Local.sSql)
+	f.data.DataTable.CreateFromSQL("TEMPCARTON","coredb",v.Local.sSql,True)
+
+	
+	
+	'we have 1 record for the label in dtMixedTemp, now we need to add all of the part info, lot info, and totals
+	f.Intrinsic.String.Build("select distinct PART, IF(CUST_PART IS NOT NULL,CUST_PART,' ') AS CUST_PART, COUNT(DISTINCT(LOT)) AS PACKS, SUM(QTY) AS PART_QTY FROM V_BOL_PACK_DTL WHERE WAYBILL_NO = '{0}' AND CRTN_NO = '{1}' GROUP BY PART, CUST_PART",V.Global.sBol,V.Args.CARTON,V.Local.sSql)
+	f.Data.DataTable.CreateFromSQL("TEMP","COREDB",V.Local.sSql,True)
+
+F.Intrinsic.Control.For(V.Local.iLoop,1,V.Local.iLoops,1)
+	'copy the record from TEMPCARTON to dtMixedTemp so we have a record to add data to.
+	f.Data.DataTable.Merge("TEMPCARTON","dtMixedTemp",True,1)
+	f.Intrinsic.String.Build("CNTNR_NO = '{0}'",V.Args.CARTON.RIGHT6,V.Local.sFilter)
+	F.Data.DataTable.Select("dtMixedTemp",v.Local.sFilter,V.Local.sRow)
+	v.Local.iField.Set(0)
+	v.Local.fQtyPackaged.Set(0)
+	'determine where we are at with the detail rows
+	f.Intrinsic.Control.If(v.Local.iLoop,<,v.Local.iLoops)
+		'if iloop < iloops and iRows = -1 then this is the first time through
+		F.Intrinsic.Control.If(V.Local.iRows,=,-1)
+			v.Local.iStart.Set(0)
+			f.Intrinsic.Math.Add(v.Local.iRows,8,v.Local.iRows)
+		'if iloop < iloops and iRows <> -1 then this is a subsequent loop in which we have more rows to update.
+		f.Intrinsic.Control.Else
+			f.Intrinsic.Math.Add(v.Local.iRows,1,v.Local.iStart)
+			f.Intrinsic.Math.Add(v.Local.iRows,8,v.Local.iRows)
+		F.Intrinsic.Control.EndIf
+	f.Intrinsic.Control.Else
+	
+		
+		'if iloop = iloops and irows = -1 then this is our fist time through and likely we only have 1 loop to do
+		f.Intrinsic.Control.If(v.Local.iRows,=,-1)
+			v.Local.iStart.Set(0)
+			f.Intrinsic.Math.Add(v.Local.iRows,v.Local.iParts,v.Local.iRows)
+		'if iloop = iloops and iRows <> - 1 then this is our last loop through from previous loops
+		f.Intrinsic.Control.Else
+			f.Intrinsic.Math.Add(v.Local.iRows,1,v.Local.iStart)
+			f.Intrinsic.Math.Add(v.Local.iRows,v.Local.iParts,v.Local.iRows)
+		f.Intrinsic.Control.EndIf
+
+	f.Intrinsic.Control.EndIf
+
+	
+	f.Intrinsic.Control.For(v.Local.iCount,v.Local.iStart,v.Local.iRows,1)
+		'if we have 1 LOT for this part, we want the actual lot number
+		'if we have more than 1 lot for this part we want it to say 'MIXED'
+		F.Intrinsic.Control.If(V.DataTable.TEMP(V.Local.iCount).PACKS!FIELDVALLONG,=,1)
+			f.Intrinsic.String.Build("select distinct LOT from V_BOL_PACK_DTL WHERE WAYBILL_NO = '{0}' AND CRTN_NO = '{1}' AND PART = '{2}' GROUP BY LOT",V.Global.sBol,V.Args.CARTON,V.DataTable.TEMP(V.Local.iCount).PART!FIELDVALTRIM,V.Local.sSql)
+			F.ODBC.Connection!COREDB.EXECUTEANDRETURN(v.Local.sSql,v.Local.sret)
+		F.Intrinsic.Control.Else
+			V.Local.sRet.Set("MIXED")
+		F.Intrinsic.Control.EndIf
+		'if we're on record 0, then we're going to overwrite the existing values in the standard fields
+		'otherwise we're going to populate the new fields that we added for a the mixed label.
+		f.Intrinsic.Control.If(v.Local.iCount,=,v.Local.iStart)
+			f.Intrinsic.Math.Add(v.Local.fQtyPackaged,v.DataTable.TEMP(V.Local.iCount).PART_QTY!FIELDVAL,V.Local.fQtyPackaged)
+			f.Data.DataTable.SetValue("dtMixedTemp",v.Local.sRow,"QTY_ON_LABEL",V.DataTable.TEMP(V.Local.iCount).PART_QTY!FIELDVAL,"PART",V.DataTable.TEMP(V.Local.iCount).PART!FIELDVAL,"CUST_PART",V.DataTable.TEMP(V.Local.iCount).CUST_PART!FIELDVAL,"NUMBER_OF_PACKS",V.DataTable.TEMP(V.Local.iCount).PACKS!FIELDVAL,"LOT",V.Local.sRet,"TOTAL_CARTONS",V.Local.iCartons,"QTY_PKGD",V.Local.fQtyPackaged)
+		F.Intrinsic.Control.Else
+			f.Intrinsic.Math.Add(v.Local.fQtyPackaged,v.DataTable.TEMP(V.Local.iCount).PART_QTY!FIELDVAL,V.Local.fQtyPackaged)
+			f.Intrinsic.Math.Add(v.Local.iField,1,v.Local.iField)
+			F.Intrinsic.String.Build("PART{0}",v.Local.iField,v.Local.sPart)
+			f.Intrinsic.String.Build("CUST_PART{0}",v.Local.iField,v.Local.sCustPart)
+			f.Intrinsic.String.Build("NUMBER_OF_PACKS{0}",V.Local.iField,V.Local.sPacks)
+			F.Intrinsic.String.Build("QTY_ON_LABEL{0}",V.Local.iField,V.Local.sQtyOnLbl)
+			f.Intrinsic.String.Build("LOT{0}",V.Local.iField,V.Local.sLot)
+			f.Data.DataTable.SetValue("dtMixedTemp",v.Local.sRow,V.Local.sQtyOnLbl,V.DataTable.TEMP(V.Local.iCount).PART_QTY!FIELDVAL,V.Local.sPart,V.DataTable.TEMP(V.Local.iCount).PART!FIELDVAL,v.Local.sCustPart,V.DataTable.TEMP(V.Local.iCount).CUST_PART!FIELDVAL,v.Local.sPacks,V.DataTable.TEMP(V.Local.iCount).PACKS!FIELDVAL,V.Local.sLot,v.Local.sRet,"TOTAL_CARTONS",V.Local.iCartons,"QTY_PKGD",V.Local.fQtyPackaged)
+		f.Intrinsic.Control.EndIf
+	f.Intrinsic.Control.Next(v.Local.iCount)
+	'move the temp row to the MixedC datatable
+	F.Data.DataTable.Merge("dtMixedTemp","dtMixedC",True,1)
+	'clear out the mixed temp so we can use it again
+	f.Data.DataTable.DeleteRow("dtMixedTemp")
+	f.Data.DataTable.AcceptChanges("dtMixedTemp")
+	
+f.Intrinsic.Control.Next(v.Local.iLoop)
+
+f.Data.DataTable.Close("TEMPCARTON")
+F.Data.DataTable.Close("TEMP")
+F.Data.DataTable.Close("dtMixedTemp")
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.add_mixed_carton_data.End
+
+Program.Sub.add_multilot_carton_data.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.sSql.Declare
+v.Local.sRet.Declare
+v.Local.iCount.Declare
+V.Local.sPart.Declare
+v.Local.sCustPart.Declare
+v.Local.sPacks.Declare
+v.Local.sQtyOnLbl.Declare
+V.Local.iCartons.Declare
+V.Local.iPallets.Declare
+v.Local.sRow.Declare(String,"0")
+
+v.Local.iCartons.Set(v.Args.CARTONS)
+V.Local.iPallets.Set(V.Args.PALLETS)
+
+
+'the passed carton has multiple parts.
+f.Intrinsic.Control.If(v.DataTable.dtMixedTemp.Exists,=,False)
+	f.Data.DataTable.Clone("dtCrtn","dtMixedTemp",True)
+f.Intrinsic.Control.EndIf
+
+f.Intrinsic.String.Build("select top 1 * from v_y_oe_ship_bol where RUNID = '{0}' and PALLET_NO <> '000000' AND CNTNR_NO = '{1}'",V.Global.iBIRunID,V.Args.CARTON.Right6,V.Local.sSql)
+f.data.DataTable.CreateFromSQL("TEMP","coredb",v.Local.sSql,True)
+f.Data.DataTable.Merge("TEMP","dtMixedTemp",True,1)
+F.Data.DataTable.Close("TEMP")
+
+
+'we have 1 record for the label in dtMixedTemp, now we need to add all of the part info, lot info, and totals
+f.Intrinsic.String.Build("select distinct PART, CUST_PART, COUNT(DISTINCT(LOT)) AS PACKS, SUM(QTY) AS PART_QTY FROM V_BOL_PACK_DTL WHERE WAYBILL_NO = '{0}' AND CRTN_NO = '{1}' GROUP BY PART, CUST_PART",V.Global.sBol,V.Args.CARTON,V.Local.sSql)
+f.Data.DataTable.CreateFromSQL("TEMP","COREDB",V.Local.sSql,True)
+'in this case, we are here because we have multiple lots, not because we have multiple parts.
+'the only thing we need to change is the total quantity and the lot needs to say mixed
+
+f.Data.DataTable.SetValue("dtMixedTemp",v.Local.sRow,"QTY_ON_LABEL",v.DataTable.TEMP(0).PART_QTY!FIELDVALFLOAT,"LOT","MIXED","NUMBER_OF_PACKS",V.DataTable.TEMP(0).PACKS!FIELDVALFLOAT,"TOTAL_CARTONS",v.Local.iCartons,"TOTAL_PALLETS",V.Local.iPallets)
+
+F.Data.DataTable.Merge("dtMixedTemp","dtCrtn",True,1)
+
+F.Data.DataTable.Close("dtMixedTemp")
+
+F.Data.DataTable.Close("TEMP")
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.add_multilot_carton_data.End
+
+Program.Sub.build_pallet_data.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.sSql.Declare
+v.Local.sRet.Declare
+v.Local.iCount.Declare
+v.Local.iRecs.Declare
+v.Local.iLots.Declare
+v.Local.iParts.Declare
+v.Local.fPalletQty.Declare
+v.Local.iPallets.Declare
+v.Local.iCartons.Declare
+
+f.Data.DataTable.Compute("dtPallets","max(PLLT_NO)","",v.Local.iPallets)
+f.Data.DataTable.Compute("dtCartons","max(CRTN_NO)","",v.Local.iCartons)
+
+f.Intrinsic.Control.For(v.Local.iCount,0,v.DataTable.dtPallets.RowCount--,1)
+		'this tells us how many records, lots, and part#'s are in the carton, as well as the total quantity.
+	f.Intrinsic.String.Build("select count(distinct(CRTN_NO)) as recs, count(distinct(lot)) as lots, count(distinct(part)) as part, sum(qty) as CARTON_QTY  FROM V_BOL_PACK_DTL WHERE WAYBILL_NO = '{0}' AND PLLT_NO = '{1}'",V.Global.sBol,V.DataTable.dtPallets(V.Local.iCount).PLLT_NO!FIELDVALTRIM,v.Local.sSql)
+	f.ODBC.Connection!coredb.executeandreturn(V.Local.sSql,V.Local.sRet)
+	f.Intrinsic.String.Split(v.Local.sRet,"*!*",v.Local.sRet)
+	v.Local.iRecs.Set(v.Local.sRet(0))
+	v.Local.iLots.Set(v.Local.sRet(1))
+	v.Local.iParts.Set(v.Local.sRet(2))
+	v.Local.fPalletQty.Set(v.Local.sRet(3))
+	
+	F.Intrinsic.Control.If(V.Local.iRecs,=,1,AND,v.Local.iParts,=,1)
+		'this means there's only 1 carton on this pallet with 1 part.  the number of lots of irrelevant here other than to say it's mixed.	
+		f.Intrinsic.String.Build("select BOL.*, CAST({2} AS INTEGER) AS TOTAL_PALLETS, CAST(0 AS INTEGER) AS NUMBER_OF_PACKS, CAST({2} AS INTEGER) AS TOTAL_CARTONS from v_y_oe_ship_bol BOL where RUNID = '{0}' and PALLET_NO = 0 AND CNTNR_NO = {1}",V.Global.iBIRunID,V.DataTable.dtPallets(V.Local.iCount).PLLT_NO!FIELDVALLONG,V.Local.iPallets,V.Local.iCartons,V.Local.sSql)
+		f.Data.DataTable.CreateFromSQL("dtPalletTemp","coredb",v.Local.sSql,True)
+		f.Intrinsic.Control.If(v.Local.iLots,>,1)
+			f.Data.DataTable.SetValue("dtPalletTemp",0,"LOT","MIXED","NUMBER_OF_PACKS",V.Local.iLots)
+		f.Intrinsic.Control.EndIf
+		f.Data.DataTable.Merge("dtPalletTemp","dtPllt",True,1)
+		F.Data.DataTable.Close("dtPalletTemp")
+	f.Intrinsic.Control.ElseIf(v.Local.iRecs,>,1,AND,v.Local.iParts,>,1)
+		'there is more than 1 carton and more than 1 part on this pallet, we need to build the mixed pallet data.
+		f.Intrinsic.Control.CallSub(add_mixed_pallet_data,"PALLET",V.DataTable.dtPallets(V.Local.iCount).PLLT_NO!FIELDVALSTRING,"QTY",V.Local.fPalletQty,"PARTS",V.Local.iParts,"PACKNO",V.DataTable.dtPallets(V.Local.iCount).PCK_NO!FIELDVALTRIM)
+	F.Intrinsic.Control.ElseIf(V.Local.iRecs,>,1,AND,V.Local.iParts,=,1)
+		'there is more than 1 carton but there this is only 1 part.  All that matters now is the number of lots
+		f.Intrinsic.String.Build("select BOL.*, CAST({2} AS INTEGER) AS TOTAL_PALLETS, CAST(0 AS INTEGER) AS NUMBER_OF_PACKS, CAST({2} AS INTEGER) AS TOTAL_CARTONS from v_y_oe_ship_bol BOL where RUNID = '{0}' and PALLET_NO = 0 AND CNTNR_NO = {1}",V.Global.iBIRunID,V.DataTable.dtPallets(V.Local.iCount).PLLT_NO!FIELDVALSTRING,V.Local.iPallets,V.Local.iCartons,V.Local.sSql)
+		f.Data.DataTable.CreateFromSQL("dtPalletTemp","coredb",v.Local.sSql,True)
+		f.Intrinsic.Control.If(v.Local.iLots,>,1)
+			f.Data.DataTable.SetValue("dtPalletTemp",0,"LOT","MIXED","NUMBER_OF_PACKS",V.Local.iRecs)
+		f.Intrinsic.Control.EndIf
+		f.Data.DataTable.Merge("dtPalletTemp","dtPllt",True,1)
+		F.Data.DataTable.Close("dtPalletTemp")
+	F.Intrinsic.Control.EndIf
+f.Intrinsic.Control.Next(v.Local.iCount)
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.build_pallet_data.End
+
+Program.Sub.add_mixed_pallet_data.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.sSql.Declare
+v.Local.sRet.Declare
+v.Local.iCount.Declare
+v.Local.iRows.Declare(Long,-1)
+V.Local.sPart.Declare
+v.Local.sCustPart.Declare
+v.Local.sPacks.Declare
+v.Local.sQtyOnLbl.Declare
+V.Local.sLot.Declare
+v.Local.sFilter.Declare
+v.Local.sRow.Declare
+v.Local.iPallets.Declare
+v.Local.sFullRow.Declare
+v.Local.fLoops.Declare
+v.Local.iLoops.Declare
+v.Local.iLoop.Declare
+V.Local.iStart.Declare
+v.Local.iParts.Declare
+v.Local.iField.Declare
+V.Local.fQtyPackaged.Declare
+
+'need to determine how many times to run this loop based on the number of parts that were passed in.
+'if there are more than 8 parts, we will have to loop more than once
+
+'calculate the number of loops
+f.Intrinsic.Control.If(v.Args.PARTS.Long,>,8)
+	f.Intrinsic.Math.Div(v.Args.PARTS.Long,8,v.Local.fLoops)
+	'set iLoops to the whole number value of floops.
+	v.Local.iLoops.Set(v.Local.fLoops)
+	'see how many rows we can account for, and how many are not accounted for yet.
+	f.Intrinsic.Math.Mult(v.Local.iLoops,8,v.Local.iParts)
+	f.Intrinsic.Control.If(V.Args.PARTS.Long,>,v.Local.iParts)
+		'if we have extra rows we have to add a loop
+		f.Intrinsic.Math.Add(v.Local.iLoops,1,v.Local.iLoops)
+		'we need to know how many rows are left over for the last label
+		f.Intrinsic.Math.Sub(v.Args.PARTS.Long,v.Local.iParts,v.Local.iParts)
+		'by default we can put 8 parts per label.  If iRows < 8, then we only need to add that number of parts to the last label.
+	f.Intrinsic.Control.EndIf
+f.Intrinsic.Control.Else
+	'if args.parts <= 8, then we only have to do 1 loop and account for the number of parts that exist in args.parts
+	v.Local.iLoops.Set(1)
+	v.Local.iParts.Set(v.Args.PARTS.Long)
+f.Intrinsic.Control.EndIf
+
+
+
+f.Data.DataTable.Compute("dtPallets","max(PLLT_NO)","",v.Local.iPallets)
+'the passed pallet id has multiple parts
+f.Intrinsic.Control.If(v.DataTable.dtMixedTemp.Exists,=,False)
+	f.Data.DataTable.Clone("dtMixedP","dtMixedTemp",True)
+f.Intrinsic.Control.EndIf
+
+f.Intrinsic.String.Build("select * from v_y_oe_ship_bol where RUNID = '{0}' and PALLET_NO = '000000' AND CNTNR_NO = '{1}'",V.Global.iBIRunID,V.Args.PALLET.RIGHT6,V.Local.sSql)
+F.Data.DataTable.CreateFromSQL("TEMPPALLET","coredb",v.Local.sSql,True)
+
+
+'we have 1 record for the label in dtMixedTemp, now we need to add all of the part info, lot info, and totals
+f.Intrinsic.String.Build("select distinct PART, IF(CUST_PART IS NOT NULL,CUST_PART,' ') AS CUST_PART, COUNT(DISTINCT(LOT)) AS PACKS, SUM(QTY) AS PART_QTY FROM V_BOL_PACK_DTL WHERE WAYBILL_NO = '{0}' AND PLLT_NO = {1} GROUP BY PART, CUST_PART",V.Global.sBol,V.Args.PALLET,V.Local.sSql)
+f.Data.DataTable.CreateFromSQL("TEMP","COREDB",V.Local.sSql,True)
+
+
+
+F.Intrinsic.Control.For(V.Local.iLoop,1,V.Local.iLoops,1)
+	
+	'copy the record from TEMPCARTON to dtMixedTemp so we have a record to add data to.
+	f.Data.DataTable.Merge("TEMPPALLET","dtMixedTemp",True,1)
+	f.Intrinsic.String.Build("CNTNR_NO = '{0}'",V.Args.PALLET.RIGHT6,V.Local.sFilter)
+	F.Data.DataTable.Select("dtMixedTemp",v.Local.sFilter,V.Local.sRow)
+	v.Local.iField.Set(0)
+	v.Local.fQtyPackaged.Set(0)
+	'determine where we are at with the detail rows
+	f.Intrinsic.Control.If(v.Local.iLoop,<,v.Local.iLoops)
+		'if iloop < iloops and iRows = -1 then this is the first time through
+		F.Intrinsic.Control.If(V.Local.iRows,=,-1)
+			v.Local.iStart.Set(0)
+			f.Intrinsic.Math.Add(v.Local.iRows,8,v.Local.iRows)
+		'if iloop < iloops and iRows <> -1 then this is a subsequent loop in which we have more rows to update.
+		f.Intrinsic.Control.Else
+			f.Intrinsic.Math.Add(v.Local.iRows,1,v.Local.iStart)
+			f.Intrinsic.Math.Add(v.Local.iRows,8,v.Local.iRows)
+		F.Intrinsic.Control.EndIf
+	f.Intrinsic.Control.Else
+		'if iloop = iloops and irows = -1 then this is our fist time through and likely we only have 1 loop to do
+		f.Intrinsic.Control.If(v.Local.iRows,=,-1)
+			v.Local.iStart.Set(0)
+			f.Intrinsic.Math.Add(v.Local.iRows,v.Local.iParts,v.Local.iRows)
+		'if iloop = iloops and iRows <> - 1 then this is our last loop through from previous loops
+		f.Intrinsic.Control.Else
+			f.Intrinsic.Math.Add(v.Local.iRows,1,v.Local.iStart)
+			f.Intrinsic.Math.Add(v.Local.iRows,v.Local.iParts,v.Local.iRows)
+		f.Intrinsic.Control.EndIf
+
+	f.Intrinsic.Control.EndIf
+
+
+	f.Intrinsic.Control.For(v.Local.iCount,v.Local.iStart,v.Local.iRows,1)
+		'if we have 1 lot for this part, we want the actual lot number
+		'if we have more than 1 lot for this part we want it to say 'MIXED'
+		f.Intrinsic.Control.If(v.DataTable.TEMP(V.Local.iCount).PACKS!FIELDVALLONG,=,1)
+			F.Intrinsic.String.Build("SELECT DISTINCT LOT FROM V_BOL_PACK_DTL WHERE WAYBILL_NO = '{0}' AND PLLT_NO = '{1}' AND PART = '{2}' GROUP BY LOT",V.Global.sBol,V.Args.PALLET,V.DataTable.TEMP(V.Local.iCount).PART!FIELDVALTRIM,V.Local.sSql)
+			F.ODBC.Connection!COREDB.EXECUTEANDRETURN(v.Local.sSql,v.Local.sRet)
+		F.Intrinsic.Control.Else
+			V.Local.sRet.Set("MIXED")
+		f.Intrinsic.Control.EndIf
+		'if we're on record 0, then we're going to overwrite the existing values in the standard fields
+		'otherwise we're going to populate the new fields that we added for a the mixed label.
+		f.Intrinsic.Control.If(v.Local.iCount,=,v.Local.iStart)
+			f.Intrinsic.Math.Add(v.Local.fQtyPackaged,v.DataTable.TEMP(V.Local.iCount).PART_QTY!FIELDVAL,V.Local.fQtyPackaged)
+			f.Data.DataTable.SetValue("dtMixedTemp",v.Local.sRow,"QTY_ON_LABEL",V.DataTable.TEMP(V.Local.iCount).PART_QTY!FIELDVAL,"PART",V.DataTable.TEMP(V.Local.iCount).PART!FIELDVAL,"CUST_PART",V.DataTable.TEMP(V.Local.iCount).CUST_PART!FIELDVAL,"NUMBER_OF_PACKS",V.DataTable.TEMP(V.Local.iCount).PACKS!FIELDVAL,"LOT",V.Local.sRet,"TOTAL_PALLETS",V.Local.iPallets,"QTY_PKGD",V.Local.fQtyPackaged)
+		F.Intrinsic.Control.Else
+			f.Intrinsic.Math.Add(v.Local.fQtyPackaged,v.DataTable.TEMP(V.Local.iCount).PART_QTY!FIELDVAL,V.Local.fQtyPackaged)
+			f.Intrinsic.Math.Add(v.Local.iField,1,v.Local.iField)
+			F.Intrinsic.String.Build("PART{0}",v.Local.iField,v.Local.sPart)
+			f.Intrinsic.String.Build("CUST_PART{0}",v.Local.iField,v.Local.sCustPart)
+			f.Intrinsic.String.Build("NUMBER_OF_PACKS{0}",V.Local.iField,V.Local.sPacks)
+			F.Intrinsic.String.Build("QTY_ON_LABEL{0}",V.Local.iField,V.Local.sQtyOnLbl)
+			f.Intrinsic.String.Build("LOT{0}",V.Local.iField,V.Local.sLot)
+			f.Data.DataTable.SetValue("dtMixedTemp",v.Local.sRow,V.Local.sQtyOnLbl,V.DataTable.TEMP(V.Local.iCount).PART_QTY!FIELDVAL,V.Local.sPart,V.DataTable.TEMP(V.Local.iCount).PART!FIELDVAL,v.Local.sCustPart,V.DataTable.TEMP(V.Local.iCount).CUST_PART!FIELDVAL,v.Local.sPacks,V.DataTable.TEMP(V.Local.iCount).PACKS!FIELDVAL,V.Local.sLot,v.Local.sRet,"TOTAL_PALLETS",V.Local.iPallets,"QTY_PKGD",V.Local.fQtyPackaged)
+		f.Intrinsic.Control.EndIf
+	f.Intrinsic.Control.Next(v.Local.iCount)
+	'move the temp row to the MixedC datatable
+	F.Data.DataTable.Merge("dtMixedTemp","dtMixedP",True,1)
+	'clear out the mixed temp so we can use it again
+	f.Data.DataTable.DeleteRow("dtMixedTemp")
+	f.Data.DataTable.AcceptChanges("dtMixedTemp")
+
+F.Intrinsic.Control.Next(V.Local.iLoop)
+
+F.Data.DataTable.Close("dtMixedTemp")
+F.Data.DataTable.Close("TEMPPALLET")
+f.Data.DataTable.Close("TEMP")
+
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.add_mixed_pallet_data.End
+
+Program.Sub.fix_table_names.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+
+'close a couple tables we no longer need so we can reuse the names
+f.Data.DataTable.Close("dtCartons")
+f.Data.DataTable.Close("dtPallets")
+'we need to match up these "mixed" table names to the standard datatables so we can move on to the next phase.
+'Master
+f.Data.DataTable.Clone("dtPllt","dtMaster",True)
+f.Data.DataTable.Merge("dtPllt","dtMaster",True,1)
+'Carton
+f.Data.DataTable.Clone("dtCrtn","dtCartons",True)
+f.Data.DataTable.Merge("dtCrtn","dtCartons",True,1)
+'Mixed
+f.Data.DataTable.Clone("dtMixedC","dtMixed",True)
+f.Data.DataTable.Merge("dtMixedC","dtMixed",True,1)
+f.Data.DataTable.Merge("dtMixedP","dtMixed",True,1)
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.fix_table_names.End
+
+Program.Sub.merge_dock_info.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.sSql.Declare
+V.Local.iCount.Declare
+
+'add a key field to the labels datatable
+f.Data.DataTable.AddExpressionColumn("dtLabels","ORDKEY","STRING","SO_NBR + SO_LINE")
+F.Data.DataTable.AddColumn("dtLabels","DOCKCODE","STRING")
+f.Data.DataView.Create("dtLabels","dvLabels",22)
+f.Data.DataView.ToDataTableDistinct("dtLabels","dvLabels","dtOrders","SO_NBR")
+
+f.Intrinsic.Control.For(v.Local.iCount,0,v.DataTable.dtOrders.RowCount--,1)
+	'now we have to create a dictionary based on which field they're using for DOCK#
+	f.Intrinsic.Control.SelectCase(v.Global.iDock)
+		'line user field 1
+		f.Intrinsic.Control.Case(1)
+			F.Intrinsic.String.Build("select (order_no + record_no) as ORDERKEY, USER_1 AS VALUE from V_ORDER_LINES where ORDER_NO = '{0}'",V.DataTable.dtOrders(v.Local.iCount).SO_NBR!FIELDVALTRIM,V.Local.sSql)
+			F.Data.DataTable.CreateFromSQL("TEMP","COREDB",V.Local.sSql,True)	
+		'line user field 2
+		f.Intrinsic.Control.Case(2)
+			F.Intrinsic.String.Build("select (order_no + record_no) as ORDERKEY, USER_2 AS VALUE from V_ORDER_LINES where ORDER_NO = '{0}'",V.DataTable.dtOrders(v.Local.iCount).SO_NBR!FIELDVALTRIM,V.Local.sSql)
+			F.Data.DataTable.CreateFromSQL("TEMP","COREDB",V.Local.sSql,True)		
+		'line user field 3
+		f.Intrinsic.Control.Case(3)
+			F.Intrinsic.String.Build("select (order_no + record_no) as ORDERKEY, USER_3 AS VALUE from V_ORDER_LINES where ORDER_NO = '{0}'",V.DataTable.dtOrders(v.Local.iCount).SO_NBR!FIELDVALTRIM,V.Local.sSql)
+			F.Data.DataTable.CreateFromSQL("TEMP","COREDB",V.Local.sSql,True)		
+		'line user field 4
+		f.Intrinsic.Control.Case(4)
+			F.Intrinsic.String.Build("select (order_no + record_no) as ORDERKEY, USER_4 AS VALUE from V_ORDER_LINES where ORDER_NO = '{0}'",V.DataTable.dtOrders(v.Local.iCount).SO_NBR!FIELDVALTRIM,V.Local.sSql)
+			F.Data.DataTable.CreateFromSQL("TEMP","COREDB",V.Local.sSql,True)		
+		'line user field 5
+		f.Intrinsic.Control.Case(5)
+			F.Intrinsic.String.Build("select (order_no + record_no) as ORDERKEY, USER_5 AS VALUE from V_ORDER_LINES where ORDER_NO = '{0}'",V.DataTable.dtOrders(v.Local.iCount).SO_NBR!FIELDVALTRIM,V.Local.sSql)
+			F.Data.DataTable.CreateFromSQL("TEMP","COREDB",V.Local.sSql,True)		
+		'line text_info_1
+		f.Intrinsic.Control.Case(6)
+			F.Intrinsic.String.Build("select (order_no + record_no) as ORDERKEY, INFO_1 AS VALUE from V_ORDER_LINES where ORDER_NO = '{0}'",V.DataTable.dtOrders(v.Local.iCount).SO_NBR!FIELDVALTRIM,V.Local.sSql)
+			F.Data.DataTable.CreateFromSQL("TEMP","COREDB",V.Local.sSql,True)		
+		'line text_info_2
+		f.Intrinsic.Control.Case(7)
+			F.Intrinsic.String.Build("select (order_no + record_no) as ORDERKEY, INFO_2 AS VALUE from V_ORDER_LINES where ORDER_NO = '{0}'",V.DataTable.dtOrders(v.Local.iCount).SO_NBR!FIELDVALTRIM,V.Local.sSql)
+			F.Data.DataTable.CreateFromSQL("TEMP","COREDB",V.Local.sSql,True)		
+	f.Intrinsic.Control.EndSelect
+	
+	f.Intrinsic.Control.If(v.Local.iCount,=,0)
+		f.Data.DataTable.Clone("TEMP","dtDocks",True)
+		f.Data.DataTable.Merge("TEMP","dtDocks",True,2)
+		f.Data.DataTable.Close("TEMP")
+	f.Intrinsic.Control.Else
+		f.Data.DataTable.Merge("TEMP","dtDocks",True,2)
+		f.Data.DataTable.Close("TEMP")
+	f.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.Next(V.Local.iCount)
+
+F.Data.Dictionary.CreateFromDatatable("dcDock","dtDocks","ORDERKEY","VALUE",20)
+f.Data.Dictionary.SetDefaultReturn("dcDock","")
+
+F.Data.DataTable.FillFromDictionary("dtLabels","dcDock","ORDKEY","DOCK")
+F.Data.DataTable.RemoveColumn("dtLabels","ORDKEY")
+
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.merge_dock_info.End
+
+Program.Sub.separate_master_mixed_carton.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+V.Local.sFilter.Declare
+V.Local.sRows.Declare
+v.Local.sSql.Declare
+v.Local.sRet.Declare
+v.Local.iCount.Declare
+v.Local.iC.Declare
+v.Local.sContainer.Declare
+v.Local.iMaxPlts.Declare
+v.Local.iMaxCartons.Declare
+v.Local.iLots.Declare
+
+'we'll be filling in the #'s for PACKS and LOTS as well as Total Cartons and Total Pallets.
+'PACKS is the number of cartons on a pallet
+'LOTS is the number of unique lot numbers in a carton.
+'when we get to mixed label data, PACKS becomes the number of Cartons for Each part (allows up to 8 parts per label)
+
+'we'll use this subroutine to identify 'mixed' cartons and pallets and separate those items in to a separate datatables
+f.Intrinsic.Control.If(v.DataView.dtLabels!dvLabels.Exists,=,False)
+	f.Data.DataView.Create("dtLabels","dvLabels",22)
+f.Intrinsic.Control.EndIf
+
+'since the core option doesn't account for mixed cartons, and only accounts for mixed pallets, we'll have to get some additional data
+'we need to find out which cartons have more than 1 part in them.
+'f.Intrinsic.String.Build("SELECT DISTINCT(RIGHT(PLLT_NO,6) + RIGHT(CRTN_NO,6)) AS NUM_CART, COUNT(PLLT_NO + CRTN_NO) AS CARTONS, PART FROM V_BOL_PACK_DTL WHERE WAYBILL_NO = '{0}' GROUP BY NUM_CART, PART ORDER BY CARTONS DESC",v.Global.sBol,v.Local.sSql)
+'f.Data.DataTable.CreateFromSQL("dtCartons","coredb",v.Local.sSql,True)
+'get the count of unique lot numbers per carton
+f.Intrinsic.String.Build("SELECT RIGHT(CRTN_NO,6), COUNT(DISTINCT(LOT)) FROM V_BOL_PACK_DTL WHERE WAYBILL_NO = '{0}' GROUP BY CRTN_NO",v.Global.sBol,v.Local.sSql)
+F.Data.Dictionary.CreateFromSQL("dcLots","coredb",v.Local.sSql)
+f.Data.Dictionary.SetDefaultReturn("dcLots",0)
+'filter the view so only cartons appear
+f.Data.DataView.SetFilter("dtLabels","dvLabels","PALLET_NO > '000000'")
+
+
+'create a dictionary for filling in the number of packs per pallet.
+f.Intrinsic.String.Build("SELECT DISTINCT(RIGHT(PLLT_NO,6)) AS PALLET, COUNT(CRTN_NO) AS PACKS FROM V_BOL_PACK_DTL WHERE WAYBILL_NO = '{0}' GROUP BY PLLT_NO",V.Global.sBol,V.Local.sSql)
+F.Data.Dictionary.CreateFromSQL("dcPacks","COREDB",V.Local.sSql,20)
+F.Data.Dictionary.SetDefaultReturn("dcPacks",0)
+
+
+f.Data.DataTable.Compute("dtLabels","max(PALLET_NO)","",V.Local.iMaxPlts)
+F.Data.DataTable.Compute("dtLabels","max(CNTNR_NO)","PALLET_NO > '000000'",V.Local.iMaxCartons)
+
+F.Data.DataTable.AddColumn("dtLabels","TOTAL_CARTONS","LONG",V.Local.iMaxCartons)
+F.Data.DataTable.AddColumn("dtLabels","TOTAL_PALLETS","LONG",V.Local.iMaxPlts)
+'XXX
+F.Data.DataTable.AddColumn("dtLabels","NUMBER_OF_LOTS","LONG")
+F.Data.DataTable.AddColumn("dtLabels","NUMBER_OF_PACKS","LONG")
+
+'first separate out the mixed pallets
+'f.Intrinsic.String.Build("PART = '{0}' AND PALLET_NO = '000000'",V.Global.sMixed,V.Local.sFilter)
+f.Intrinsic.String.Build("PART = '{0}'",V.Global.sMixed,V.Local.sFilter)
+f.Data.DataView.SetFilter("dtLabels","dvLabels",v.Local.sFilter)
+f.Intrinsic.Control.If(v.DataView.dtLabels!dvLabels.RowCount,>,0)
+	f.Data.DataView.ToDataTable("dtLabels","dvLabels","dtMixed",True)
+	F.Data.DataTable.FillFromDictionary("dtMixed","dcPacks","PALLET","NUMBER_OF_PACKS")
+f.Intrinsic.Control.EndIf
+'next separate out the normal pallets
+f.Intrinsic.String.Build("PART <> '{0}' AND PALLET_NO = '000000'",V.Global.sMixed,V.Local.sFilter)
+F.Data.DataView.SetFilter("dtLabels","dvLabels",V.Local.sFilter)
+f.Intrinsic.Control.If(v.DataView.dtLabels!dvLabels.RowCount,>,0)
+	F.Data.DataView.ToDataTable("dtLabels","dvLabels","dtMaster",True)
+	F.Data.DataTable.FillFromDictionary("dtMaster","dcPacks","PALLET","NUMBER_OF_PACKS")
+f.Intrinsic.Control.EndIf
+'next get the individual cartons
+f.Intrinsic.String.Build("PART <> '{0}' AND PALLET_NO > '000000'",V.Global.sMixed,V.Local.sFilter)
+F.Data.DataView.SetFilter("dtLabels","dvLabels",V.Local.sFilter)
+f.Intrinsic.Control.If(v.DataView.dtLabels!dvLabels.RowCount,>,0)
+	F.Data.DataView.ToDataTable("dtLabels","dvLabels","dtCartons",True)
+	F.Data.DataTable.FillFromDictionary("dtCartons","dcLots","CARTON","NUMBER_OF_LOTS")
+f.Intrinsic.Control.EndIf
+'last get the mixed cartons - these will ultimately get merged back in to the dtMixed table and the label will differentiate between Mixed carton or Mixed pallet.
+'f.Intrinsic.String.Build("PART = '{0}' AND PALLET_NO > '000000'",V.Global.sMixed,V.Local.sFilter)
+'f.Data.DataView.SetFilter("dtLabels","dvLabels",v.Local.sFilter)
+'f.Intrinsic.Control.If(v.DataView.dtLabels!dvLabels.RowCount,>,0)
+'	f.Data.DataView.ToDataTable("dtLabels","dvLabels","dtMixedCarton",True)
+'f.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.separate_master_mixed_carton.End
+
+Program.Sub.get_label_data.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+V.Local.sSql.Declare
+
+f.Intrinsic.String.Build("select * from v_y_oe_ship_bol where RUNID = '{0}'",v.Global.iBIRunID,v.Local.sSql)
+f.Data.Datatable.CreateFromSQL("dtLabels","coredb",v.Local.sSql,True)
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.get_label_data.End
+
+Program.Sub.separate_master_carton.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.sFilter.Declare
+
+f.Intrinsic.Control.If(v.DataView.dtLabels!dvLabels.Exists,=,False)
+	f.Data.DataView.Create("dtLabels","dvLabels",22)
+f.Intrinsic.Control.EndIf
+
+'next separate out the normal pallets
+F.Intrinsic.Control.If(V.Args.PALLET,=,TRUE)
+	f.Intrinsic.String.Build("PALLET_NO = '000000'","",V.Local.sFilter)
+	F.Data.DataView.SetFilter("dtLabels","dvLabels",V.Local.sFilter)
+	f.Intrinsic.Control.If(v.DataView.dtLabels!dvLabels.RowCount,>,0)
+		F.Data.DataView.ToDataTable("dtLabels","dvLabels","dtMaster",True)
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+
+'next get the individual cartons
+f.Intrinsic.Control.If(v.Args.CARTON,=,TRUE)
+	f.Intrinsic.String.Build("PALLET_NO > '000000'","",V.Local.sFilter)
+	F.Data.DataView.SetFilter("dtLabels","dvLabels",V.Local.sFilter)
+	f.Intrinsic.Control.If(v.DataView.dtLabels!dvLabels.RowCount,>,0)
+		F.Data.DataView.ToDataTable("dtLabels","dvLabels","dtCartons",True)
+	F.Intrinsic.Control.EndIf
+f.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+
+Program.Sub.separate_master_carton.End
+
+Program.Sub.build_mixed_data.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.sFilter.Declare
+v.Local.sSql.Declare
+v.Local.iCount.Declare
+v.Local.iParts.Declare
+v.Local.iColumn.Declare(Long,0)
+v.Local.sPallet.Declare
+v.Local.sCarton.Declare
+V.Local.sPart.Declare
+v.Local.sCustPart.Declare
+v.Local.sQty.Declare
+v.Local.sPacks.Declare
+v.Local.fRows.Declare
+v.Local.iRows.Declare
+
+
+f.Intrinsic.Control.If(v.DataTable.dtMixed.Exists)
+	'in this loop we are just adding the columns to the dtMixed datatable that we need for the mixed label
+	F.Intrinsic.Control.For(V.Local.iCount,0,7,1)
+		F.Intrinsic.Control.If(V.Local.iCount,>,0)
+			F.Intrinsic.String.Build("PART{0}",V.Local.iCount,v.Local.sPart)
+			f.Intrinsic.String.Build("CUST_PART{0}",V.Local.iCount,V.Local.sCustPart)
+			F.Intrinsic.String.Build("NUMBER_OF_PACKS{0}",V.Local.iCount,V.Local.sPacks)
+			F.Intrinsic.String.Build("QTY_ON_LABEL{0}",V.Local.iCount,v.Local.sQty)
+			f.Data.DataTable.AddColumn("dtMixed",v.Local.sPart,"STRING")
+			F.Data.DataTable.AddColumn("dtMixed",v.Local.sCustPart,"STRING")
+			F.Data.DataTable.AddColumn("dtMixed",V.Local.sPacks,"LONG")
+			F.Data.DataTable.AddColumn("dtMixed",V.Local.sQty,"FLOAT")
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.Next(V.Local.iCount)
+	
+	'in this loop we are just adding the columns to the dtMixedCarton datatable that we need for the mixed label
+'	F.Intrinsic.Control.For(V.Local.iCount,0,7,1)
+'		F.Intrinsic.Control.If(V.Local.iCount,=,0)
+'			F.Data.DataTable.AddColumn("dtMixed","NUMBER_OF_PACKS","LONG")
+'		F.Intrinsic.Control.Else
+'			F.Intrinsic.String.Build("PART{0}",V.Local.iCount,v.Local.sPart)
+'			f.Intrinsic.String.Build("CUST_PART{0}",V.Local.iCount,V.Local.sCustPart)
+'			F.Intrinsic.String.Build("NUMBER_OF_PACKS{0}",V.Local.iCount,V.Local.sPacks)
+'			F.Intrinsic.String.Build("QTY_ON_LABEL{0}",V.Local.iCount,v.Local.sQty)
+'			f.Data.DataTable.AddColumn("dtMixed",v.Local.sPart,"STRING")
+'			F.Data.DataTable.AddColumn("dtMixed",v.Local.sCustPart,"STRING")
+'			F.Data.DataTable.AddColumn("dtMixed",V.Local.sPacks,"LONG")
+'			F.Data.DataTable.AddColumn("dtMixed",V.Local.sQty,"FLOAT")
+'		F.Intrinsic.Control.EndIf
+'	F.Intrinsic.Control.Next(V.Local.iCount)
+	
+	'for each UNIQUE part that exists on this carton / pallet, add a column for PART, QTY_ON_LABEL, NUMBER_OF_PACKS, CUST_PART
+	'if PALLET_NO <> '000000', then this is a carton.  Use the PALLET_NO, CNTNR_NO, and WAYBILL_NO to select from bol_pack_dtl to get all records for that carton.
+	'if PALLET_NO = '000000', then this is a pallet.  Use the PALLET_NO and WAYBILL_NO to select from bol_pack_dtl to get all records for that pallet.
+	'iColumn is used to keep track of how many columns we've added.  We have to stop at 8.
+	F.Intrinsic.Control.For(V.Local.iCount,0,v.DataTable.dtMixed.RowCount--,1)
+		f.Intrinsic.Control.If(v.DataTable.dtMixed(v.Local.iCount).PALLET_NO!FIELDVALLONG,>,0)
+			'this is a carton
+			f.Intrinsic.String.Build("select pd.part, pd.cust_part, sum(pd.qty) as qty, count(part) as packs from v_bol_pack_dtl pd where waybill_no = '{0}' and right(PLLT_NO,6) = '{1}' and right(CRTN_NO,6) = '{2}' group by part, cust_part",V.Global.sBol,V.DataTable.dtMixed(v.Local.iCount).PALLET_NO!FIELDVALTRIM,V.DataTable.dtMixed(v.Local.iCount).CNTNR_NO!FIELDVALTRIM,V.Local.sSql)
+		f.Intrinsic.Control.Else
+			'this is pallet,USE CNTNR_NO = 
+			F.Intrinsic.String.Build("select pd.part, pd.cust_part, sum(pd.qty) as qty, count(part) as packs from v_bol_pack_dtl pd where waybill_no = '{0}' and right(PLLT_NO,6) = '{1}' group by part, cust_part",V.Global.sBol,V.DataTable.dtMixed(v.Local.iCount).CNTNR_NO!FIELDVALTRIM,V.Local.sSql)
+		F.Intrinsic.Control.EndIf
+		
+		'this temp table is a detail of every part that's on the pallet, or every part that's in the carton.
+		f.Data.DataTable.CreateFromSQL("temp","coredb",v.Local.sSql,True)
+		
+		f.Intrinsic.Control.If(v.DataTable.temp.RowCount,>,8)
+			v.Local.iRows.Set(7)
+		f.Intrinsic.Control.Else
+			v.Local.iRows.Set(v.DataTable.temp.RowCount--)
+		f.Intrinsic.Control.EndIf
+		
+		f.Intrinsic.Control.For(v.Local.iParts,0,v.Local.iRows,1)
+			f.Intrinsic.Control.If(v.Local.iParts,=,0)
+			
+				f.Data.DataTable.SetValue("dtMixed",v.Local.iCount,"PART",V.DataTable.TEMP(V.Local.iParts).PART!FIELDVALTRIM,"CUST_PART",v.DataTable.temp(v.Local.iParts).CUST_PART!FIELDVALTRIM,"QTY_ON_LABEL",V.DataTable.TEMP(V.Local.iParts).QTY!FIELDVAL,"NUMBER_OF_PACKS",V.DataTable.TEMP(V.Local.iParts).PACKS!FIELDVAL)
+	
+			F.Intrinsic.Control.ElseIf(v.Local.iParts,>,0,AND,V.Local.iParts,<,8)
+				F.Intrinsic.String.Build("PART{0}",V.Local.iParts,V.Local.sPart)
+				f.Intrinsic.String.Build("CUST_PART{0}",V.Local.iParts,V.Local.sCustPart)
+				F.Intrinsic.String.Build("NUMBER_OF_PACKS{0}",V.Local.iParts,V.Local.sPacks)
+				F.Intrinsic.String.Build("QTY_ON_LABEL{0}",V.Local.iParts,V.Local.sQty)
+				F.Data.DataTable.SetValue("dtMixed",V.Local.iCount,V.Local.sPart,V.DataTable.TEMP(V.Local.iParts).PART!FIELDVALTRIM,V.Local.sCustPart,V.DataTable.TEMP(V.Local.iParts).CUST_PART!FIELDVALTRIM,V.Local.sQty,V.DataTable.TEMP(V.Local.iParts).QTY!FIELDVALFLOAT,V.Local.sPacks,V.DataTable.TEMP(V.Local.iParts).PACKS!FIELDVALLONG)
+			F.Intrinsic.Control.EndIf
+		f.Intrinsic.Control.Next(v.Local.iParts)
+			
+		F.Data.DataTable.Close("TEMP")		
+
+	F.Intrinsic.Control.Next(V.Local.iCount)
+f.Intrinsic.Control.EndIf
+
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.build_mixed_data.End
+
+Program.Sub.add_company_data.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.sSql.Declare
+V.Local.sRet.Declare
+v.Local.sFields.Declare
+v.Local.sColumns.Declare
+
+f.Intrinsic.Control.If(v.DataTable.dtCOMP.Exists,=,False)
+
+	'get the location and company data using which ever datatable has data in it.
+	f.Intrinsic.Control.If(v.DataTable.dtMaster.Exists)
+		f.Intrinsic.Control.AndIf(v.DataTable.dtMaster.RowCount,>,0)
+			f.Intrinsic.String.Build("select RTRIM(order_location) from v_order_header where order_no = '{0}'",V.DataTable.dtMaster(0).SO_NBR!FIELDVALTRIM,V.Local.sSql)
+			F.ODBC.Connection!COREDB.ExecuteAndReturn(v.Local.sSql,v.Local.sRet)
+			'for Vulcan only
+			f.Intrinsic.Control.If(v.Local.sRet,=,"")
+				v.Local.sRet.Set("WH")
+			f.Intrinsic.Control.EndIf
+			f.Intrinsic.String.Build("select cast ('{0}' as CHAR(19)) as waybill_no, NAME AS FROM_NAME, ADRS1 AS FROM_ADDRESS1, ADRS2 AS FROM_ADDRESS2, ADRS3 AS FROM_ADDRESS3, ADRS4 AS FROM_ADDRESS4, ADRS5 AS FROM_ADDRESS5, CITY AS FROM_CITY, STATE AS FROM_STATE, ZIP AS FROM_ZIP, COUNTRY AS FROM_COUNTRY, COUNTY AS FROM_COUNTY FROM V_LOCATION_ADDRESS WHERE LOCN = '{1}'",V.DataTable.dtMaster(0).WAYBILL_NO!FIELDVALSTRING,v.Local.sRet.Trim,v.Local.sSql)
+		
+	f.Intrinsic.Control.ElseIf(v.DataTable.dtCartons.Exists)
+		f.Intrinsic.Control.AndIf(v.DataTable.dtCartons.RowCount,>,0)
+			f.Intrinsic.String.Build("select RTRIM(order_location) from v_order_header where order_no = '{0}'",V.DataTable.dtCartons(0).SO_NBR!FIELDVALTRIM,V.Local.sSql)
+			F.ODBC.Connection!COREDB.ExecuteAndReturn(v.Local.sSql,v.Local.sRet)
+			f.Intrinsic.Control.If(v.Local.sRet,=,"")
+				v.Local.sRet.Set("WH")
+			f.Intrinsic.Control.EndIf
+			f.Intrinsic.String.Build("select cast ('{0}' as CHAR(19)) as waybill_no, NAME AS FROM_NAME, ADRS1 AS FROM_ADDRESS1, ADRS2 AS FROM_ADDRESS2, ADRS3 AS FROM_ADDRESS3, ADRS4 AS FROM_ADDRESS4, ADRS5 AS FROM_ADDRESS5, CITY AS FROM_CITY, STATE AS FROM_STATE, ZIP AS FROM_ZIP, COUNTRY AS FROM_COUNTRY, COUNTY AS FROM_COUNTY FROM V_LOCATION_ADDRESS WHERE LOCN = '{1}'",V.DataTable.dtCartons(0).WAYBILL_NO!FIELDVALSTRING,v.Local.sRet.Trim,v.Local.sSql)
+		
+	f.Intrinsic.Control.ElseIf(v.DataTable.dtMixed.Exists)
+		f.Intrinsic.Control.AndIf(v.DataTable.dtMixed.RowCount,>,0)
+			f.Intrinsic.String.Build("select RTRIM(order_location) from v_order_header where order_no = '{0}'",V.DataTable.dtMixed(0).SO_NBR!FIELDVALTRIM,V.Local.sSql)
+			F.ODBC.Connection!COREDB.ExecuteAndReturn(v.Local.sSql,v.Local.sRet)
+			f.Intrinsic.Control.If(v.Local.sRet,=,"")
+				v.Local.sRet.Set("WH")
+			f.Intrinsic.Control.EndIf
+			f.Intrinsic.String.Build("select cast ('{0}' as CHAR(19)) as waybill_no, NAME AS FROM_NAME, ADRS1 AS FROM_ADDRESS1, ADRS2 AS FROM_ADDRESS2, ADRS3 AS FROM_ADDRESS3, ADRS4 AS FROM_ADDRESS4, ADRS5 AS FROM_ADDRESS5, CITY AS FROM_CITY, STATE AS FROM_STATE, ZIP AS FROM_ZIP, COUNTRY AS FROM_COUNTRY, COUNTY AS FROM_COUNTY FROM V_LOCATION_ADDRESS WHERE LOCN = '{1}'",V.DataTable.dtMixed(0).WAYBILL_NO!FIELDVALSTRING,v.Local.sRet.Trim,v.Local.sSql)
+	f.Intrinsic.Control.EndIf
+		
+	f.Data.DataTable.CreateFromSQL("dtCOMP","COREDB",V.Local.sSql,True)
+	
+f.Intrinsic.Control.EndIf
+
+
+'create a variable list of fieldname for dtComp since it will be used in all 3 joins if we run them
+F.Intrinsic.String.Build("C.{0}",V.DataTable.dtCOMP.FieldNames,V.Local.sColumns)
+'remove the waybill column from the column names string so it's not a duplicate output value
+F.Intrinsic.String.Replace(V.Local.sColumns,"waybill_no*!*","",V.Local.sColumns)
+F.Intrinsic.String.Replace(V.Local.sColumns,"*!*","*!*C.",V.Local.sColumns)
+
+f.Intrinsic.Control.If(v.DataTable.dtMaster.Exists)
+	F.Intrinsic.Control.AndIf(V.DataTable.dtMaster.RowCount,>,0)
+		f.Intrinsic.String.Build("M.{0}",v.DataTable.dtMaster.FieldNames,v.Local.sFields)
+		f.Intrinsic.String.Replace(v.Local.sFields,"*!*","*!*M.",V.Local.sFields)
+	
+		F.Intrinsic.String.Build("{0}*!*{1}",v.Local.sFields,v.Local.sColumns,v.Local.sFields)
+		f.Data.Linq.Join("INNERJOIN","DATATABLE","DTMASTER*!*M","DATATABLE","DTCOMP*!*C","M.WAYBILL_NO = C.WAYBILL_NO",v.Local.sFields,"","","","dtMasterPrint",True)
+f.Intrinsic.Control.EndIf
+
+f.Intrinsic.Control.If(v.DataTable.dtCartons.Exists)
+	F.Intrinsic.Control.AndIf(V.DataTable.dtCartons.RowCount,>,0)
+		f.Intrinsic.String.Build("M.{0}",v.DataTable.dtCartons.FieldNames,v.Local.sFields)
+		f.Intrinsic.String.Replace(v.Local.sFields,"*!*","*!*M.",V.Local.sFields)
+	
+		F.Intrinsic.String.Build("{0}*!*{1}",v.Local.sFields,v.Local.sColumns,v.Local.sFields)
+		f.Data.Linq.Join("INNERJOIN","DATATABLE","DTCARTONS*!*M","DATATABLE","DTCOMP*!*C","M.WAYBILL_NO = C.WAYBILL_NO",v.Local.sFields,"","","","dtCartonsPrint",True)
+f.Intrinsic.Control.EndIf
+
+f.Intrinsic.Control.If(v.DataTable.dtMixed.Exists)
+	F.Intrinsic.Control.AndIf(V.DataTable.dtMixed.RowCount,>,0)
+		f.Intrinsic.String.Build("M.{0}",v.DataTable.dtMixed.FieldNames,v.Local.sFields)
+		f.Intrinsic.String.Replace(v.Local.sFields,"*!*","*!*M.",V.Local.sFields)
+	
+		F.Intrinsic.String.Build("{0}*!*{1}",v.Local.sFields,v.Local.sColumns,v.Local.sFields)
+		f.Data.Linq.Join("INNERJOIN","DATATABLE","DTMIXED*!*M","DATATABLE","DTCOMP*!*C","M.WAYBILL_NO = C.WAYBILL_NO",v.Local.sFields,"","","","dtMixedPrint",True)
+f.Intrinsic.Control.EndIf
+
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.add_company_data.End
+
+Program.Sub.make_copies.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.make_copies.End
+
+Program.Sub.print_labels.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.iRet.Declare
+v.Local.sRet.Declare
+v.Local.sSql.Declare
+v.Local.sReport.Declare
+v.Local.sPrinter.Declare
+v.Local.iCnt.Declare
+v.Local.iPl_no.Declare
+v.Local.sCopy.Declare
+v.Local.bReturn.Declare
+'all of these labels have to be codesoft, so there is no alternate print for crystal, and no reason to check for bSentinel
+
+f.Data.Datatable.CreateFromSQL("dtCarriernPro","coredb","Select WAY_BILL,CARRIER_CD,PRO_NO from V_SHIPMENT_HEADER")
+f.Data.Dictionary.createFromDatatable("dCarrier","dtCarriernPro","WAY_BILL","CARRIER_CD")
+f.Data.Dictionary.createFromDatatable("dProNo","dtCarriernPro","WAY_BILL","PRO_NO")
+f.Data.Dictionary.SetDefaultReturn("dCarrier","")
+f.Data.Dictionary.SetDefaultReturn("dProNo","")
+
+'if we have data in the dtMasterPrint table
+f.Intrinsic.Control.If(v.DataTable.dtMasterPrint.Exists)
+	f.Intrinsic.Control.AndIf(v.DataTable.dtMasterPrint.RowCount,>,0)
+		v.Global.iBIRptID.Set(v.DataTable.LBLTYPE(0).MASTER!FIELDVALTRIM)
+		f.Intrinsic.Control.CallSub(get_bi_start_logging,"CUSTOM",True)
+
+		'update the runid and log id in the data
+		f.Data.DataTable.SetValue("dtMasterPrint",-1,"RUNID",V.Global.iBIRunID)
+		F.Data.DataTable.SetValue("dtMasterPrint",-1,"LOGID",V.Global.iBILogID)
+		
+		'stop logging
+		f.Global.BI.StopLogging(v.Global.iBILogID)
+		'print the codesoft label
+		v.Local.sPrinter.Set(v.Screen.Labels!ddlPltPrinter.text)
+		
+		f.Data.Datatable.AddColumn("dtMasterPrint","CARRIER","String")
+		f.Data.Datatable.AddColumn("dtMasterPrint","PRO_NO","String")
+		f.Data.DataTable.FillFromDictionary("dtMasterPrint","dCarrier","WAYBILL_NO","CARRIER")
+		f.Data.DataTable.FillFromDictionary("dtMasterPrint","dProNo","WAYBILL_NO","PRO_NO")
+		'======for Vulcan===============================================================================
+		f.Intrinsic.Control.For(v.Local.iCnt,0,v.DataTable.dtMasterPrint.RowCount--,1)
+			f.Intrinsic.Math.Add(v.Local.iCnt,1,v.Local.iPl_no)
+			F.Data.DataTable.SetValue("dtMasterPrint",v.Local.iCnt,"PALLET_NO",v.Local.iPl_no)
+		f.Intrinsic.Control.Next(v.Local.iCnt)
+	
+		f.Data.DataTable.AddColumn("dtMasterPrint","LABEL_COPY","String")
+		f.Data.DataTable.SetValue("dtMasterPrint",-1,"LABEL_COPY",v.Screen.Labels!txtPltCopies.Text)
+		
+		f.Intrinsic.string.IsInString(v.datatable.dtMasterPrint.FieldNames,"*TOTAL_PALLETS*",True,v.Local.bReturn)
+		f.Intrinsic.Control.If(v.Local.bReturn.Not)
+			f.Data.DataTable.AddColumn("dtMasterPrint","TOTAL_PALLETS","String")
+			f.Data.Datatable.SetValue("dtMasterPrint",-1,"TOTAL_PALLETS",v.DataTable.dtMasterPrint.RowCount)
+'			f.Data.Dictionary.CreateFromSQL("dTotPal","coredb","select PCK_NO, CAST(MAX(PLLT_NO) AS INTEGER) AS TOTAL_PALLETS from V_BOL_PALLET_NUM group by PCK_NO")
+'			f.Data.Dictionary.SetDefaultReturn("dTotPal","")
+'			f.Data.Datatable.FillFromDictionary("dtMasterPrint","dTotPal","PCK_NO","TOTAL_PALLETS")
+		f.Intrinsic.Control.EndIf
+		
+		f.Data.Dictionary.CreateFromSQL("dCustPO","coredb","select WAY_BILL,CUSTOMER_PO from V_SHIPMENT_HEADER")
+		f.Data.Dictionary.SetDefaultReturn("dCustPO","")
+		f.Data.Datatable.FillFromDictionary("dtMasterPrint","dCustPO","WAYBILL_NO","CUST_PO")
+		f.Data.Dictionary.Close("dCustPO")
+		
+		'===============================================================================================
+		f.Intrinsic.Control.If(v.Local.sPrinter.Trim,>,"")
+			f.Global.BI.PrintCodesoftLabelFromDatatable(v.Global.iBIRunID,v.Global.iBILogID,"dtMasterPrint",v.Local.sPrinter,True)
+		f.Intrinsic.Control.Else
+			f.Global.BI.PrintCodesoftLabelFromDatatable(v.Global.iBIRunID,v.Global.iBILogID,"dtMasterPrint","",True)
+		f.Intrinsic.Control.EndIf
+
+f.Intrinsic.Control.EndIf
+
+'if we have data in the dtMixedPrint table - print the mixed pallet labels first
+f.Intrinsic.Control.If(v.DataTable.dtMixedPrint.Exists)
+	f.Intrinsic.Control.AndIf(v.DataTable.dtMixedPrint.RowCount,>,0)
+		v.Global.iBIRptID.Set(v.DataTable.LBLTYPE(0).MIXED!FIELDVALTRIM)
+		f.Intrinsic.Control.CallSub(get_bi_start_logging,"CUSTOM",True)
+
+
+		'in the Mixed table there are both pallet and carton labels, we need the pallet labels first
+		f.Data.DataView.Create("dtMixedPrint","dvMixedPrint",22,"PALLET_NO = '000000'","CNTNR_NO ASC")
+		
+		f.Intrinsic.Control.If(v.DataView.dtMixedPrint!dvMixedPrint.RowCount,>,0)
+			F.Data.DataView.ToDataTable("dtMixedPrint","dvMixedPrint","dtMixedPalletPrint",True)
+			'update the runid and log id in the data
+			f.Data.DataTable.SetValue("dtMixedPalletPrint",-1,"RUNID",V.Global.iBIRunID)
+			F.Data.DataTable.SetValue("dtMixedPalletPrint",-1,"LOGID",V.Global.iBILogID)
+			f.Intrinsic.Control.For(v.Local.iCnt,0,v.DataTable.dtMixedPalletPrint.RowCount--,1)
+				f.Intrinsic.Math.Add(v.Local.iCnt,1,v.Local.iPl_no)
+				F.Data.DataTable.SetValue("dtMixedPalletPrint",v.Local.iCnt,"PALLET_NO",v.Local.iPl_no)
+			f.Intrinsic.Control.Next(v.Local.iCnt)
+
+			f.Global.BI.StopLogging(v.Global.iBILogID)
+			'print the codesoft label
+			v.Local.sPrinter.Set(v.Screen.Labels!ddlPltPrinter.text)
+			
+			f.Data.Datatable.AddColumn("dtMixedPalletPrint","CARRIER","String")
+			f.Data.Datatable.AddColumn("dtMixedPalletPrint","PRO_NO","String")
+			f.Data.DataTable.FillFromDictionary("dtMixedPalletPrint","dCarrier","WAYBILL_NO","CARRIER")
+			f.Data.DataTable.FillFromDictionary("dtMixedPalletPrint","dProNo","WAYBILL_NO","PRO_NO")
+		
+			f.Intrinsic.Control.If(v.Local.sPrinter.Trim,>,"")
+				f.Global.BI.PrintCodesoftLabelFromDatatable(v.Global.iBIRunID,v.Global.iBILogID,"dtMixedPalletPrint",v.Local.sPrinter,True)
+			f.Intrinsic.Control.Else
+				f.Global.BI.PrintCodesoftLabelFromDatatable(v.Global.iBIRunID,v.Global.iBILogID,"dtMixedPalletPrint","",True)
+			f.Intrinsic.Control.EndIf
+		f.Intrinsic.Control.EndIf
+f.Intrinsic.Control.EndIf
+
+
+'if we have data in the dtCartonsPrint table
+f.Intrinsic.Control.If(v.DataTable.dtCartonsPrint.Exists)
+	f.Intrinsic.Control.AndIf(v.DataTable.dtCartonsPrint.RowCount,>,0)
+		v.Global.iBIRptID.Set(v.DataTable.LBLTYPE(0).CONTAINER!FIELDVALTRIM)
+		f.Intrinsic.Control.CallSub(get_bi_start_logging,"CUSTOM",True)
+
+		
+		'update the runid and log id in the data
+		f.Data.DataTable.SetValue("dtCartonsPrint",-1,"RUNID",V.Global.iBIRunID)
+		F.Data.DataTable.SetValue("dtCartonsPrint",-1,"LOGID",V.Global.iBILogID)
+
+		'stop logging
+		f.Global.BI.StopLogging(v.Global.iBILogID)
+		'print the codesoft label
+		v.Local.sPrinter.Set(v.Screen.Labels!ddlCrtnPrinter.text)
+		f.Data.Datatable.AddColumn("dtCartonsPrint","CARRIER","String")
+		f.Data.Datatable.AddColumn("dtCartonsPrint","PRO_NO","String")
+		f.Data.DataTable.FillFromDictionary("dtCartonsPrint","dCarrier","WAYBILL_NO","CARRIER")
+		f.Data.DataTable.FillFromDictionary("dtCartonsPrint","dProNo","WAYBILL_NO","PRO_NO")
+		
+		f.Data.DataTable.AddColumn("dtCartonsPrint","LABEL_COPY","String")
+		f.Data.DataTable.SetValue("dtCartonsPrint",-1,"LABEL_COPY",v.Screen.Labels!txtCrtnCopies.Text)
+			
+		f.Intrinsic.Control.If(v.Local.sPrinter.Trim,>,"")
+			f.Global.BI.PrintCodesoftLabelFromDatatable(v.Global.iBIRunID,v.Global.iBILogID,"dtCartonsPrint",v.Local.sPrinter,True)
+		f.Intrinsic.Control.Else
+			f.Global.BI.PrintCodesoftLabelFromDatatable(v.Global.iBIRunID,v.Global.iBILogID,"dtCartonsPrint","",True)
+		f.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+
+'if we have data in the dtMixedPrint table - print the mixed carton labels last
+f.Intrinsic.Control.If(v.DataTable.dtMixedPrint.Exists)
+	f.Intrinsic.Control.AndIf(v.DataTable.dtMixedPrint.RowCount,>,0)
+		v.Global.iBIRptID.Set(v.DataTable.LBLTYPE(0).MIXED!FIELDVALTRIM)
+		f.Intrinsic.Control.CallSub(get_bi_start_logging,"CUSTOM",True)
+		
+
+		'in the Mixed table there are both pallet and carton labels, we need the pallet labels first
+		f.Data.DataView.SetFilter("dtMixedPrint","dvMixedPrint","PALLET_NO <> '000000'")
+		
+		f.Intrinsic.Control.If(v.DataView.dtMixedPrint!dvMixedPrint.RowCount,>,0)
+			F.Data.DataView.ToDataTable("dtMixedPrint","dvMixedPrint","dtMixedCartonPrint",True)
+			'update the runid and log id in the data
+			f.Data.DataTable.SetValue("dtMixedCartonPrint",-1,"RUNID",V.Global.iBIRunID)
+			F.Data.DataTable.SetValue("dtMixedCartonPrint",-1,"LOGID",V.Global.iBILogID)
+			
+			f.Global.BI.StopLogging(v.Global.iBILogID)
+			'print the codesoft label
+			v.Local.sPrinter.Set(v.Screen.Labels!ddlCrtnPrinter.text)
+			f.Data.Datatable.AddColumn("dtMixedCartonPrint","CARRIER","String")
+			f.Data.Datatable.AddColumn("dtMixedCartonPrint","PRO_NO","String")
+			f.Data.DataTable.FillFromDictionary("dtMixedCartonPrint","dCarrier","WAYBILL_NO","CARRIER")
+			f.Data.DataTable.FillFromDictionary("dtMixedCartonPrint","dProNo","WAYBILL_NO","PRO_NO")
+			
+			f.Intrinsic.Control.If(v.Local.sPrinter.Trim,>,"")
+				f.Global.BI.PrintCodesoftLabelFromDatatable(v.Global.iBIRunID,v.Global.iBILogID,"dtMixedCartonPrint",v.Local.sPrinter,True)
+			f.Intrinsic.Control.Else
+				f.Global.BI.PrintCodesoftLabelFromDatatable(v.Global.iBIRunID,v.Global.iBILogID,"dtMixedCartonPrint","",True)
+			f.Intrinsic.Control.EndIf
+		f.Intrinsic.Control.EndIf
+f.Intrinsic.Control.EndIf
+
+f.Data.Dictionary.Close("dCarrier")
+
+f.ODBC.Connection!coredb.Close
+
+f.Intrinsic.Control.CallSub(cmdCancel_Click)
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.print_labels.End
+
+Program.Sub.cmdPrint_Click.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+
+
+
+GUI.Labels..Visible(False)
+F.Intrinsic.Control.CallSub(get_settings)
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.cmdPrint_Click.End
+
+Program.Sub.cmdCancel_Click.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+
+f.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.cmdCancel_Click.End
+
+Program.Sub.get_bi_start_logging.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.iRet.Declare
+v.Local.sRet.Declare
+v.Local.sSql.Declare
+v.Local.sReport.Declare
+v.Local.sPrinter.Declare
+v.Local.bCustom.Declare
+
+'we will need a common connection for retrieving report information
+f.ODBC.Connection!comm.opencommonconnection
+
+f.Global.BI.GetRunID(v.Global.iBIRunID)
+
+f.Intrinsic.String.Build("select top 1 report_sequence from BIR_ACTIVE_SEQ where REPORT_ID = {0} AND COMPANY = '{1}'",V.Global.iBIRptID.Long,V.Caller.CompanyCode,V.Local.sSql)
+F.ODBC.Connection!comm.ExecuteAndReturn(v.Local.sSql,v.Local.iRet)
+F.Global.BI.GetReportSequenceInfo(V.Global.iBIRptID,v.Local.iRet,v.Caller.CompanyCode,V.Local.sRet)
+f.Intrinsic.String.Split(v.Local.sRet,"*!*",v.Local.sRet)
+f.Intrinsic.File.GetFileNameFromFQN(v.Local.sRet(2),v.Local.sReport)
+'start logging
+F.Global.BI.StartLogging(V.Global.iBIRunID,V.Global.iBIRptID,v.Local.iRet,V.Local.sRet(2),V.Global.iBILogID)
+
+f.ODBC.Connection!comm.Close
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.get_bi_start_logging.End
+
+Program.Sub.Comments.Start
+${$5$}$2.0.0.0$}$2
+${$6$}$gsandoval$}$20220223150329725$}$pxyipsmdqasyAY7lJ5+YqAibKN4I37/Y2TRPIn1iA5i3VpfRSh70npL9g+ZMSHJibeI1wxIrgt19Tvj0j+nreg==
+Program.Sub.Comments.End
